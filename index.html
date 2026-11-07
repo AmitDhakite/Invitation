@@ -3,9 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#EDE6DA">
+<meta name="theme-color" content="#E6E3DC">
 <title>You're invited</title>
 <meta name="description" content="A sealed invitation. Tap to open.">
+
+<!-- what WhatsApp / iMessage show when the link is shared — these can't come from
+     INVITE below, because link previews don't run JavaScript. Keep them in step by hand.
+     For a picture in the preview, add: <meta property="og:image" content="https://…/preview.jpg"> -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="You're invited — Ankita &amp; Akash's wedding">
+<meta property="og:description" content="A sealed invitation. Tap to open.">
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23C9A96B'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%23FFF7E4' stroke-opacity='.5'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..500&family=Pinyon+Script&display=swap" rel="stylesheet">
@@ -15,36 +24,54 @@
    tokens
    ───────────────────────────────────────────── */
 :root{
-  --sage:       #96A386;
-  --sage-deep:  #6E7C60;
-  --sage-light: #AEBB9E;
-  --sage-liner: #C6D0B7;
-  --wall:       #EDE6DA;
-  --ivory:      #FBF7EF;
+  /* ── the palette: midnight navy with champagne gold (no. 01 in palettes.html) ──
+     to change palette, copy another card's values from palettes.html into these twelve lines;
+     every other colour on the page is mixed from them.
+     (the theme-color and the favicon in <head> can't read CSS: change those two by hand) */
+  --wall:       #E6E3DC;
+  --env-light:  #33436A;
+  --env:        #1F2A44;
+  --env-deep:   #121A2C;
+  --liner:      #D9C39A;
+  --seal-light: #EAD4A4;
+  --seal:       #C9A96B;
+  --seal-deep:  #8E723D;
+  --seal-ink:   #FFF7E4;
+  --paper-tone: #FBF7EE;
+  --ink:        #1F2A44;
+  --accent:     #B8975A;
+
+  /* mixed from the palette above */
+  --ink-soft:   color-mix(in srgb, var(--ink) 74%, var(--paper-tone));
+  --frame:      color-mix(in srgb, var(--accent) 45%, transparent);
   --crease:     rgba(150,140,115,.34);
-  --blush:      #C08D8B;
-  --blush-deep: #8F6260;
-  --ink:        #2F3428;
-  --ink-soft:   #5E6650;
 
   --serif: "Bodoni Moda", Didot, "Times New Roman", serif;
   --script: "Pinyon Script", cursive;
+
+  --ease-out:  cubic-bezier(.16,1,.3,1);
+  --ease-move: cubic-bezier(.5,0,.2,1);
+
+  /* paper tooth: drawn once as a tile, then just repeated */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .32 0 0 0 0 .29 0 0 0 0 .22 0 0 0 .7 -.28'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  --paper: linear-gradient(176deg, color-mix(in srgb, var(--paper-tone) 40%, #fff), var(--paper-tone) 55%, color-mix(in srgb, var(--paper-tone) 94%, var(--accent)));
+  /* the ornament is used as a mask, so it takes the accent colour */
+  --rule: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='9' viewBox='0 0 120 9'%3E%3Cg fill='none' stroke='%23000' stroke-opacity='.8'%3E%3Cpath d='M0 4.5h52M68 4.5h52'/%3E%3Cpath d='M60 1l3.5 3.5L60 8l-3.5-3.5z'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
 
-html{ -webkit-text-size-adjust:100%; background:var(--wall); }
+html{
+  -webkit-text-size-adjust:100%;
+  background:var(--wall);
+  scrollbar-gutter:stable;        /* the scrollbar arriving must not nudge the card */
+}
 
 body{
   min-height:100svh;
   font-family:var(--serif);
   color:var(--ink);
-  background:var(--wall);
-  /* the soft wall-light of the photograph */
-  background-image:
-    radial-gradient(120% 90% at 50% 6%, #F7F2E8 0%, rgba(247,242,232,0) 62%),
-    radial-gradient(130% 110% at 50% 116%, rgba(118,110,92,.2) 0%, rgba(118,110,92,0) 56%);
-  background-attachment:fixed;
+  -webkit-font-smoothing:antialiased;
 
   /* flex + auto margins: centres the card, but a tall card still
      scrolls on a phone instead of being clipped off the top */
@@ -56,94 +83,148 @@ body{
           calc(clamp(1.1rem,4.5vw,3rem) + env(safe-area-inset-left));
   overscroll-behavior-y:contain;
 }
+/* the soft wall-light of the photograph — a fixed layer, so scrolling never repaints it */
+body::before{
+  content:""; position:fixed; inset:0; z-index:-1; pointer-events:none;
+  background:
+    radial-gradient(120% 90% at 50% 6%, rgba(255,255,255,.5) 0%, rgba(255,255,255,0) 62%),
+    radial-gradient(130% 110% at 50% 116%, rgba(118,110,92,.2) 0%, rgba(118,110,92,0) 56%);
+}
 body.is-sealed{ overflow:hidden; }
 
-:focus-visible{ outline:2px solid var(--sage-deep); outline-offset:5px; border-radius:2px; }
+:focus-visible{ outline:2px solid var(--ink); outline-offset:5px; border-radius:2px; }
 
 /* ═════════════════════════════════════════════
    scene one · the sealed envelope
+
+   the opening, in milliseconds after the tap
+   (the script's timers mirror these):
+       0  seal cracks, greeting and hint fade
+     200  flap swings open                → 1100
+     800  letter rises out of the pocket  → 1340, then glides to the card → 2300
+    1340  letter passes in front; envelope sinks away
+    2100  bottom leaf unfolds             → 2850
+    2380  top leaf unfolds                → 3130
+    3150  the live card takes over
    ═════════════════════════════════════════════ */
 .scene{
   position:fixed;
   inset:0;
   display:grid;
   place-content:center;
-  gap:clamp(1.5rem,4.5vh,3rem);
   justify-items:center;
+  gap:clamp(1.1rem,3.6vh,2.4rem);
+  padding:calc(1rem + env(safe-area-inset-top)) 1rem calc(1rem + env(safe-area-inset-bottom));
   z-index:10;
+  -webkit-tap-highlight-color:transparent;
 }
+.scene:not(.is-ready){ visibility:hidden; }      /* until the fonts land: no flash of fallback type */
 .scene.is-gone{ opacity:0; pointer-events:none; transition:opacity .45s ease; }
 
+.greet{
+  font-family:var(--script);
+  font-size:clamp(2.3rem,10vw,3.1rem);
+  line-height:1.1;
+  color:var(--ink);
+  text-align:center;
+  max-width:88vw;
+  transition:opacity .5s ease, transform .6s var(--ease-out);
+}
+.hint{
+  font-size:.74rem;
+  letter-spacing:.24em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+  transition:opacity .35s ease;
+}
+.scene.is-opening .greet{ opacity:0; transform:translateY(-10px); }
+.scene.is-opening .hint{ opacity:0; }
+
+/* the frame everything in scene one is placed against */
+.env-wrap{
+  position:relative;
+  isolation:isolate;
+  /* the last term keeps the whole envelope in frame on a phone held sideways */
+  width:min(88vw,540px,calc((100svh - 11rem) * 1.42));
+  aspect-ratio:1.42/1;
+}
+
 .envelope{
-  appearance:none; border:0; background:none; padding:0; font:inherit; color:inherit;
+  appearance:none; -webkit-appearance:none;
+  border:0; background:none; padding:0; font:inherit; color:inherit;
+  position:absolute; inset:0;
   display:block;
   cursor:pointer;
-  position:relative;
-  /* the last term keeps the whole envelope in frame on a phone held sideways */
-  width:min(88vw,532px,122svh);
-  aspect-ratio:1.42/1;
-  perspective:1500px;
-  filter:drop-shadow(0 20px 32px rgba(86,80,64,.28));
-  transition:filter .5s ease, opacity .6s ease;
-  -webkit-tap-highlight-color:transparent;
+  border-radius:3px;
   touch-action:manipulation;
   user-select:none; -webkit-user-select:none;
+  -webkit-touch-callout:none;
+  -webkit-tap-highlight-color:transparent;
 }
-@media (hover:hover){ .envelope:hover{ filter:drop-shadow(0 26px 40px rgba(86,80,64,.34)); } }
-.envelope:active{ filter:drop-shadow(0 13px 20px rgba(86,80,64,.3)); }
-.envelope[disabled]{ cursor:default; }
+.envelope:focus-visible{ outline-offset:8px; }
+.envelope[aria-disabled="true"]{ cursor:default; }
 
-/* the envelope recedes once the letter is out */
-.envelope.is-spent{ filter:none; }
-.envelope.is-spent .env-part,
-.envelope.is-spent .seal{ opacity:0; transition:opacity .65s ease; }
+/* the shadow lives on its own layer, so nothing has to recompute it while things move */
+.env-shadow{
+  position:absolute; inset:0; z-index:-1; border-radius:3px; pointer-events:none;
+  box-shadow:0 22px 34px -12px rgba(76,72,56,.36), 0 5px 12px rgba(76,72,56,.12);
+  transition:opacity .3s ease;
+}
+.env-shadow::after{
+  content:""; position:absolute; inset:0; border-radius:inherit;
+  box-shadow:0 32px 46px -14px rgba(76,72,56,.4);
+  opacity:0; transition:opacity .35s ease;
+}
+@media (hover:hover){ .envelope:hover + .env-shadow::after{ opacity:1; } }
+.envelope:active + .env-shadow{ opacity:.7; }
 
 .env-part{ position:absolute; inset:0; }
 
 .env-back{
   border-radius:3px;
-  background:linear-gradient(158deg,var(--sage-light) 0%,var(--sage) 48%,var(--sage-deep) 100%);
+  background:var(--grain) 0 0/180px, linear-gradient(158deg,var(--env-light) 0%,var(--env) 48%,var(--env-deep) 100%);
 }
 
-/* the three folded back panels */
-.env-left,.env-right,.env-bottom{ z-index:3; border-radius:3px; }
-.env-left{   clip-path:polygon(0 0, 50.4% 50%, 0 100%);        background:linear-gradient(100deg,#A9B69A,#96A386); }
-.env-right{  clip-path:polygon(100% 0, 49.6% 50%, 100% 100%);  background:linear-gradient(260deg,#8B9879,#9BA88B); }
-.env-bottom{ clip-path:polygon(0 100.2%, 50% 49.8%, 100% 100.2%); background:linear-gradient(2deg,#7F8D70,#98A587); }
-
-/* the creases where the four panels meet, plus the light falling off centre */
+/* the pocket: three folded panels, the creases, and the shadow of the closed flap */
+.env-front{ z-index:3; }
+.env-front > *{ position:absolute; inset:0; border-radius:3px; }
+.env-left{   clip-path:polygon(0 0, 50.4% 50%, 0 100%);           background:var(--grain) 0 0/180px, linear-gradient(100deg,color-mix(in srgb,var(--env-light) 65%,var(--env)),var(--env)); }
+.env-right{  clip-path:polygon(100% 0, 49.6% 50%, 100% 100%);     background:var(--grain) 0 0/180px, linear-gradient(260deg,color-mix(in srgb,var(--env-deep) 35%,var(--env)),color-mix(in srgb,var(--env-light) 15%,var(--env))); }
+.env-bottom{ clip-path:polygon(0 100.2%, 50% 49.8%, 100% 100.2%); background:var(--grain) 0 0/180px, linear-gradient(2deg,color-mix(in srgb,var(--env-deep) 60%,var(--env)),color-mix(in srgb,var(--env-light) 10%,var(--env))); }
 .env-creases{
-  z-index:4; pointer-events:none; border-radius:3px;
   background:
     linear-gradient(to bottom right, transparent calc(50% - .6px), rgba(255,255,255,.2) 50%, transparent calc(50% + .6px)),
     linear-gradient(to bottom left,  transparent calc(50% - .6px), rgba(255,255,255,.2) 50%, transparent calc(50% + .6px)),
-    radial-gradient(58% 58% at 50% 50%, rgba(58,64,46,.15), rgba(58,64,46,0) 74%);
+    radial-gradient(58% 58% at 50% 50%, rgba(0,0,0,.16), rgba(0,0,0,0) 74%);
+}
+.env-flap-shadow{
+  clip-path:polygon(0 0, 100% 0, 50% 62%);
+  background:linear-gradient(180deg, rgba(0,0,0,0) 72%, rgba(0,0,0,.24) 100%);
+  transition:opacity .4s ease;
 }
 
 /* the flap: two faces, so the liner shows as it swings over */
+.env-flap-wrap{ z-index:5; perspective:1400px; }
 .env-flap{
-  z-index:5;
+  position:absolute; inset:0;
   transform-origin:top center;
   transform-style:preserve-3d;
 }
 .flap-face{
   position:absolute; inset:0;
   clip-path:polygon(0 0, 100% 0, 50% 58.5%);
-  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden; backface-visibility:hidden;
   border-radius:3px 3px 0 0;
 }
-.flap-out{ background:linear-gradient(172deg,#ADBA9D 0%,#9DAA8D 62%,#8F9C7F 100%); }
+.flap-out{ background:var(--grain) 0 0/180px, linear-gradient(172deg,color-mix(in srgb,var(--env-light) 80%,var(--env)) 0%,color-mix(in srgb,var(--env-light) 30%,var(--env)) 62%,var(--env) 100%); }
 .flap-in{
   transform:rotateY(180deg);
-  background:linear-gradient(8deg,var(--sage-liner),#B4C0A4 70%,#A4B094);
+  background:var(--grain) 0 0/180px, linear-gradient(8deg,var(--liner),color-mix(in srgb,var(--liner) 86%,var(--env-deep)) 70%,color-mix(in srgb,var(--liner) 74%,var(--env-deep)));
 }
-/* the shadow the closed flap casts on the panels below it */
-.env-flap-shadow{
-  z-index:4; pointer-events:none;
-  clip-path:polygon(0 0, 100% 0, 50% 62%);
-  background:linear-gradient(180deg, rgba(52,58,42,0) 72%, rgba(52,58,42,.22) 100%);
-  transition:opacity .4s ease;
-}
+
+/* once the letter is out, the envelope is set down and fades */
+.env-recede{ transition:opacity .7s ease, transform .9s var(--ease-out); }
+.env-wrap.is-spent .env-recede{ opacity:0; transform:translateY(4%); }
 
 /* ─────────────────────────────────────────────
    the wax seal
@@ -154,13 +235,17 @@ body.is-sealed{ overflow:hidden; }
   width:clamp(60px,15%,90px);
   aspect-ratio:1;
   transform:translate(-50%,-50%);
+  container-type:inline-size;
+  pointer-events:none;
 }
 .seal-half{
   position:absolute; inset:0;
-  transition:transform .68s cubic-bezier(.3,.85,.4,1), opacity .68s ease;
+  transition:transform .35s var(--ease-out), opacity .7s ease;
 }
 .seal-half.l{ clip-path:polygon(0 0, 53% 0, 46% 100%, 0 100%); }
 .seal-half.r{ clip-path:polygon(53% 0, 100% 0, 100% 100%, 46% 100%); }
+/* pressing the wax: it gives a little under the thumb */
+.envelope:active .seal-half{ transform:scale(.94); transition-duration:.12s; }
 
 .seal-face{
   position:absolute; inset:0;
@@ -168,218 +253,308 @@ body.is-sealed{ overflow:hidden; }
   border-radius:49% 51% 46% 54% / 53% 47% 53% 47%;
   background:
     radial-gradient(84% 84% at 34% 28%, rgba(255,255,255,.28) 0%, rgba(255,255,255,0) 44%),
-    radial-gradient(112% 112% at 50% 42%, #CE9390 0%, var(--blush) 52%, var(--blush-deep) 100%);
+    radial-gradient(112% 112% at 50% 42%, var(--seal-light) 0%, var(--seal) 52%, var(--seal-deep) 100%);
   box-shadow:
-    0 0 0 1px rgba(112,68,66,.3) inset,
-    0 -5px 10px rgba(104,62,60,.34) inset,
-    0 4px 10px rgba(72,56,46,.36);
+    0 0 0 1px color-mix(in srgb, var(--seal-deep) 45%, transparent) inset,
+    0 -5px 10px color-mix(in srgb, var(--seal-deep) 50%, transparent) inset,
+    0 4px 10px rgba(30,26,20,.38);
   display:grid; place-items:center;
   font-family:var(--script);
-  font-size:clamp(1.9rem,5.6vw,2.9rem);
+  font-size:1.9rem;
+  font-size:50cqw;
   line-height:1;
-  color:#F6E4E1;
-  text-shadow:0 1px 1px rgba(110,64,62,.55);
+  color:var(--seal-ink);
+  text-shadow:0 1px 1px color-mix(in srgb, var(--seal-deep) 80%, transparent);
   padding-bottom:.1em;
 }
+.seal.is-long .seal-face{ font-size:1.1rem; font-size:28cqw; }   /* a monogram of more than one letter, like A&A */
 /* the pressed rim of the stamp */
 .seal-face::after{
   content:"";
   position:absolute; inset:13%;
   border-radius:inherit;
-  box-shadow:0 0 0 1px rgba(114,68,66,.3) inset, 0 1px 0 rgba(255,255,255,.16) inset;
+  box-shadow:0 0 0 1px color-mix(in srgb, var(--seal-deep) 45%, transparent) inset, 0 1px 0 rgba(255,255,255,.16) inset;
 }
-
-.hint{
-  font-size:.8rem;
-  letter-spacing:.2em;
-  text-transform:uppercase;
-  color:var(--ink-soft);
-  transition:opacity .35s ease;
+/* a faint ring that says "here" without saying it loudly */
+.seal-ring{
+  position:absolute; inset:-1px;
+  border-radius:50%;
+  box-shadow:0 0 0 1px color-mix(in srgb, var(--paper-tone) 70%, transparent);
+  opacity:0;
 }
-.scene.is-opening .hint{ opacity:0; }
 
 /* ═════════════════════════════════════════════
-   the folded letter
+   the folded letter — the real card, printed on three leaves
    ═════════════════════════════════════════════ */
 .letter{
   position:absolute;
   top:0; left:0;
-  z-index:2;                      /* behind the envelope panels, until it is out */
+  z-index:2;                      /* behind the pocket, until it is out */
   transform-origin:top left;
   transform:translate(var(--x0,0),var(--y0,0)) scale(var(--s0,.3));
   perspective:1400px;
   transform-style:preserve-3d;
-  transition:opacity .35s ease;
+  pointer-events:none;
+  transition:opacity .26s ease;
 }
 .letter.is-clear{ z-index:9; }
 .letter.is-spent{ opacity:0; }
 
-.fold{ position:absolute; left:0; right:0; height:100%; }
-.fold.mid{ top:0; transform-style:preserve-3d; }
+.fold{ position:absolute; left:0; right:0; height:100%; transform-style:preserve-3d; }
+.fold.mid{ top:0; }
 .fold.top{ bottom:100%; transform-origin:bottom center; transform:rotateX(-180deg) translateZ(-.7px); }
 .fold.bot{ top:100%;    transform-origin:top center;    transform:rotateX(180deg)  translateZ(-1.4px); }
 
-.fold-face{
+.face{
   position:absolute; inset:0;
-  background:linear-gradient(176deg,#FFFDF8,var(--ivory) 55%,#F4EFE2);
+  overflow:hidden;
+  -webkit-backface-visibility:hidden; backface-visibility:hidden;
+  background:var(--grain) 0 0/180px, var(--paper);
 }
-.fold.mid > .fold-face{
-  /* the two creases, and the shadow the whole stack drops on the wall */
-  box-shadow:
-    0 1px 0 var(--crease) inset,
-    0 -1px 0 var(--crease) inset,
-    0 14px 30px rgba(80,74,58,.22),
-    0 2px 6px rgba(80,74,58,.14);
+.face.back{
+  transform:rotateX(180deg);
+  background:var(--grain) 0 0/180px, linear-gradient(4deg,color-mix(in srgb,var(--paper-tone) 96%,var(--ink)),var(--paper-tone));
+  box-shadow:0 0 0 .5px var(--crease);
 }
-/* the leaf edge: what tells you this is three thicknesses of paper */
-.fold.top > .fold-face{
-  box-shadow:0 -1px 0 var(--crease) inset, 0 -10px 24px rgba(80,74,58,.18), 0 -2px 6px rgba(80,74,58,.12);
+.fold.mid > .face{ box-shadow:0 2px 6px rgba(80,74,58,.12); }
+.fold.top > .front{ box-shadow:0 -1px 4px rgba(80,74,58,.08); }
+.fold.bot > .front{ box-shadow:0 22px 40px -14px rgba(80,74,58,.34), 0 2px 6px rgba(80,74,58,.1); }
+/* the outside of the folded letter: it carries the stack's shadow, and the monogram */
+.fold.bot > .back{
+  box-shadow:0 18px 34px -12px rgba(80,74,58,.36), 0 2px 5px rgba(80,74,58,.12), 0 0 0 .5px var(--crease);
+  display:grid; place-items:center;
 }
-.fold.bot > .fold-face{
-  box-shadow:0 1px 0 var(--crease) inset, 0 14px 30px rgba(80,74,58,.2), 0 2px 6px rgba(80,74,58,.12);
+.face-mono{
+  font-family:var(--script);
+  font-size:2.6rem; line-height:1;
+  color:var(--accent);
+  opacity:.85;
 }
-
-/* light sits differently on a leaf that is folded back on itself */
-.fold-shade{
+/* light sits differently on a leaf that is still lifting */
+.shade{
   position:absolute; inset:0;
-  background:linear-gradient(180deg, rgba(122,110,84,.14), rgba(122,110,84,.02));
+  background:linear-gradient(180deg, rgba(110,98,74,.2), rgba(110,98,74,.05));
 }
-.fold.mid > .fold-shade{ display:none; }
+.fold.mid .shade{ display:none; }
 
 /* ── the opening, orchestrated ── */
-.is-opening .seal-half.l{ transform:translate(-32px,36px) rotate(-27deg); opacity:0; }
-.is-opening .seal-half.r{ transform:translate(31px,41px)  rotate(23deg);  opacity:0; }
+.is-opening .seal-half{ transition:transform .75s cubic-bezier(.25,.8,.35,1), opacity .7s ease; }
+.is-opening .seal-half.l{ transform:translate(-34px,38px) rotate(-27deg); opacity:0; }
+.is-opening .seal-half.r{ transform:translate(33px,43px)  rotate(23deg);  opacity:0; }
+.is-opening .seal{ animation-play-state:paused; }
+.is-opening .seal-ring{ animation:none; opacity:0; }
 .is-opening .env-flap-shadow{ opacity:0; }
 
-.is-opening .env-flap{ animation:flap-open 1s .3s cubic-bezier(.42,.02,.28,1) forwards; }
-@keyframes flap-open{
-  0%   { transform:rotateX(0deg);   z-index:5; }
-  44%  {                            z-index:5; }
-  45%  {                            z-index:0; }
-  100% { transform:rotateX(-169deg); z-index:0; }
-}
+.is-opening .env-flap{ animation:flap-open .9s .2s var(--ease-move) forwards; }
+@keyframes flap-open{ to{ transform:rotateX(-170deg); } }
+/* the flap passes behind the letter once it is past upright */
+.is-opening .env-flap-wrap{ animation:flap-behind .9s .2s linear forwards; }
+@keyframes flap-behind{ 0%,49%{ z-index:5; } 51%,100%{ z-index:0; } }
 
-/* out of the envelope, then across to where the card will sit */
-.is-opening .letter{ animation:letter-out 1.6s 1s cubic-bezier(.32,.7,.28,1) forwards; }
+/* up out of the pocket, a breath, then across to where the card will sit */
+.is-opening .letter{ animation:letter-out 1.5s .8s linear forwards; }
 @keyframes letter-out{
-  0%   { transform:translate(var(--x0),var(--y0)) scale(var(--s0)) rotate(0deg); }
-  42%  { transform:translate(var(--x1),var(--y1)) scale(var(--s0)) rotate(-1.1deg); }
+  0%   { transform:translate(var(--x0),var(--y0)) scale(var(--s0)) rotate(0deg);
+         animation-timing-function:cubic-bezier(.45,0,.3,1); }
+  36%  { transform:translate(var(--x1),var(--y1)) scale(var(--s0)) rotate(-.8deg);
+         animation-timing-function:cubic-bezier(.5,0,.15,1); }
   100% { transform:translate(var(--x2),var(--y2)) scale(1) rotate(0deg); }
 }
 
-.is-opening .fold.bot{ animation:unfold .78s 2.5s cubic-bezier(.34,.88,.32,1) forwards; }
-.is-opening .fold.top{ animation:unfold .78s 2.98s cubic-bezier(.34,.88,.32,1) forwards; }
+.is-opening .fold.bot{ animation:unfold .75s 2.1s cubic-bezier(.45,.05,.2,1) forwards; }
+.is-opening .fold.top{ animation:unfold .75s 2.38s cubic-bezier(.45,.05,.2,1) forwards; }
 @keyframes unfold{ to{ transform:rotateX(0deg) translateZ(0); } }
 
-.is-opening .fold.bot > .fold-shade{ animation:unshade .78s 2.5s ease forwards; }
-.is-opening .fold.top > .fold-shade{ animation:unshade .78s 2.98s ease forwards; }
+.is-opening .fold.bot .shade{ animation:unshade .75s 2.1s ease forwards; }
+.is-opening .fold.top .shade{ animation:unshade .75s 2.38s ease forwards; }
 @keyframes unshade{ to{ opacity:0; } }
 
 /* ═════════════════════════════════════════════
    scene two · the invitation
    ═════════════════════════════════════════════ */
 .invite{
+  position:relative;
   width:min(100%,29.5rem);
   margin:auto;                    /* centres, and still scrolls when taller than the screen */
   text-align:center;
   border-radius:2px;
-  padding:clamp(1.9rem,6.5vw,3rem) clamp(1.4rem,5.5vw,2.75rem) clamp(1.7rem,5.5vw,2.5rem);
+  padding:clamp(2.2rem,7vw,3.2rem) clamp(1.6rem,6vw,2.9rem) clamp(2rem,6vw,2.7rem);
   background:
     /* the creases it was folded along */
     linear-gradient(180deg, transparent calc(33.333% - 16px), rgba(120,108,84,.05) calc(33.333% - 1px), rgba(150,140,115,.22) 33.333%, rgba(120,108,84,.03) calc(33.333% + 1px), transparent calc(33.333% + 12px)),
     linear-gradient(180deg, transparent calc(66.666% - 16px), rgba(120,108,84,.05) calc(66.666% - 1px), rgba(150,140,115,.22) 66.666%, rgba(120,108,84,.03) calc(66.666% + 1px), transparent calc(66.666% + 12px)),
-    linear-gradient(176deg,#FFFDF8,var(--ivory) 55%,#F4EFE2);
-  box-shadow:0 18px 44px rgba(80,74,58,.2), 0 2px 6px rgba(80,74,58,.12);
+    var(--grain) 0 0/180px,
+    var(--paper);
+  box-shadow:0 22px 40px -14px rgba(80,74,58,.34), 0 2px 6px rgba(80,74,58,.1);
   opacity:0;
-  transform:scale(.99);
-  transition:opacity .5s ease, transform .5s cubic-bezier(.3,.8,.3,1);
 }
-.invite.is-here{ opacity:1; transform:scale(1); }
+/* a hairline frame, set in from the edge like engraved stationery */
+.invite::after{
+  content:""; position:absolute; inset:9px; pointer-events:none;
+  border:1px solid var(--frame);
+}
+.invite.is-here{ opacity:1; }
+.invite.is-soft{ transition:opacity .6s ease; }
+/* the copy printed on the folded letter */
+.invite.is-print{ position:absolute; left:0; margin:0; opacity:1; box-shadow:none; }
 
 .invite-mono{
   font-family:var(--script);
   font-size:2rem; line-height:1;
-  color:var(--sage-deep);
+  color:var(--accent);
   padding-bottom:.8rem;
 }
 .invite-lead{
-  font-size:.76rem; letter-spacing:.24em; text-transform:uppercase;
+  font-size:.74rem; letter-spacing:.26em; text-transform:uppercase;
   color:var(--ink-soft);
+}
+/* the guest's own line, from ?to= — absent when the link has no name */
+.invite-dear{
+  font-family:var(--script);
+  font-size:clamp(1.8rem,7.4vw,2.2rem);
+  line-height:1.2;
+  padding-bottom:.7rem;
 }
 .invite-name{
   font-family:var(--script);
-  font-size:clamp(3.3rem,15vw,4.6rem);
-  line-height:.95;
-  padding:.3rem 0 .1rem;
+  font-weight:400;
+  font-size:clamp(3.1rem,14vw,4.3rem);
+  line-height:1;
+  padding:.3rem 0 .15rem;
 }
+.invite-name > span{ display:block; }
+.invite-amp{ font-size:.5em; color:var(--accent); padding:.1em 0 .04em; }
+.invite-name:focus{ outline:none; }
+
+/* a name written in by hand: the ink runs left to right.
+   the padding gives the script's swashes room, so the reveal never clips them */
+.ink{ display:inline-block; padding:.2em .32em; margin:-.2em -.32em; }
 .invite-occasion{
   font-size:clamp(1rem,3.8vw,1.15rem);
   font-style:italic; font-weight:400;
   color:var(--ink-soft);
 }
 
-/* the hairlines group who / when / where — they carry the structure */
-.invite-block{
-  padding-block:clamp(1.25rem,4.5vw,1.75rem);
-  border-top:1px solid rgba(110,124,96,.28);
+/* a small ornament groups who / when / where — it carries the structure */
+.invite-block, .invite-rsvp{ padding-top:clamp(1.2rem,4.2vw,1.6rem); }
+.invite-block::before, .invite-rsvp::before{
+  content:""; display:block;
+  width:120px; height:9px;
+  margin:0 auto clamp(1.2rem,4.2vw,1.6rem);
+  background:var(--accent);
+  -webkit-mask:var(--rule) center/contain no-repeat;
+          mask:var(--rule) center/contain no-repeat;
 }
-.invite-block:first-of-type{ margin-top:clamp(1.25rem,4.5vw,1.75rem); }
+.invite-block{ padding-bottom:.2rem; }
+.invite-block:first-of-type{ margin-top:clamp(.6rem,2.5vw,1rem); }
 
-.invite-when{ font-size:1.01rem; line-height:1.8; }
-.invite-venue{ font-size:1.16rem; padding-bottom:.3rem; }
-.invite-address{ font-size:.94rem; line-height:1.65; color:var(--ink-soft); }
-.invite-notes{ font-size:.9rem; line-height:1.8; font-style:italic; color:var(--ink-soft); padding-top:.8rem; }
-
-.invite-rsvp{
-  padding-top:clamp(1.25rem,4.5vw,1.75rem);
-  border-top:1px solid rgba(110,124,96,.28);
-  display:grid; gap:.9rem; justify-items:center;
+.invite-when{ font-size:1.02rem; line-height:1.8; white-space:pre-line; }
+.invite-venue{ font-size:1.18rem; padding-bottom:.3rem; }
+.invite-address{ font-size:.94rem; line-height:1.65; color:var(--ink-soft); white-space:pre-line; }
+.invite-map{
+  display:inline-block;
+  margin-top:.55rem;
+  padding:.45rem .2rem;            /* a fair thumb target, without looking like a button */
+  font-size:.68rem; letter-spacing:.22em; text-transform:uppercase;
+  color:var(--ink);
+  text-decoration:underline; text-decoration-color:var(--accent);
+  text-decoration-thickness:1px; text-underline-offset:.45em;
+  -webkit-tap-highlight-color:transparent;
+  transition:color .2s ease, text-decoration-color .2s ease;
 }
-.rsvp-by{ font-size:.82rem; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-soft); }
-.rsvp-actions{ display:flex; flex-wrap:wrap; gap:.6rem; justify-content:center; }
+.invite-map:active{ color:var(--env-deep); text-decoration-color:var(--ink); }
+.invite-notes{ font-size:.9rem; line-height:1.8; font-style:italic; color:var(--ink-soft); padding-top:.6rem; white-space:pre-line; }
+
+.invite-rsvp{ display:grid; gap:1rem; justify-items:center; padding-bottom:.2rem; }
+.rsvp-by{ font-size:.74rem; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-soft); }
+.rsvp-actions{ display:flex; flex-wrap:wrap; gap:.65rem; justify-content:center; }
 
 .btn{
   font-family:var(--serif);
-  font-size:.98rem; letter-spacing:.09em;
-  min-height:48px;                /* a comfortable thumb target */
+  font-size:.78rem; letter-spacing:.17em; text-transform:uppercase;
+  min-height:50px;                /* a comfortable thumb target */
   display:inline-flex; align-items:center; justify-content:center;
-  padding:.65em 1.4em;
-  border:1px solid var(--sage-deep); border-radius:1px;
-  background:var(--sage-deep); color:var(--ivory);
+  padding:.7em 2em;
+  border:1px solid var(--ink); border-radius:999px;
+  background:var(--ink); color:var(--paper-tone);
+  box-shadow:0 10px 20px -12px color-mix(in srgb, var(--ink) 70%, transparent);
   text-decoration:none; cursor:pointer;
   touch-action:manipulation; -webkit-tap-highlight-color:transparent;
-  transition:background .2s ease, color .2s ease, border-color .2s ease;
+  transition:transform .2s var(--ease-out), background .25s ease, color .25s ease, border-color .25s ease, box-shadow .25s ease;
 }
-.btn:active{ background:var(--ink); border-color:var(--ink); }
-.btn-quiet{ background:none; color:var(--sage-deep); border-color:rgba(110,124,96,.45); }
-.btn-quiet:active{ background:rgba(110,124,96,.14); color:var(--ink); border-color:var(--sage-deep); }
+.btn:active{ transform:scale(.97); background:var(--env-deep); border-color:var(--env-deep); box-shadow:0 4px 10px -8px color-mix(in srgb, var(--ink) 70%, transparent); }
+.btn-quiet{ background:none; color:var(--ink); border-color:var(--accent); box-shadow:none; }
+.btn-quiet:active{ background:color-mix(in srgb, var(--accent) 16%, transparent); color:var(--ink); border-color:var(--accent); box-shadow:none; }
 @media (hover:hover){
-  .btn:hover{ background:var(--ink); border-color:var(--ink); }
-  .btn-quiet:hover{ background:rgba(110,124,96,.1); color:var(--ink); border-color:var(--sage-deep); }
+  .btn:hover{ background:var(--env-deep); border-color:var(--env-deep); }
+  .btn-quiet:hover{ background:color-mix(in srgb, var(--accent) 12%, transparent); color:var(--ink); border-color:var(--accent); }
 }
 /* phone: the two replies stack full width */
 @media (max-width:26rem){
-  .rsvp-actions{ flex-direction:column; align-self:stretch; width:100%; }
+  .rsvp-actions{ flex-direction:column; width:100%; }
 }
 
 .invite-from{
-  padding-top:clamp(1.3rem,4.5vw,1.9rem);
+  padding-top:clamp(1.4rem,4.5vw,1.9rem);
   font-size:.93rem; font-style:italic; color:var(--ink-soft);
 }
 
-/* ── no motion, no theatre: go straight to the card ── */
+/* ── the sound toggle: small, on the wall, out of the way ── */
+.mute{
+  appearance:none; -webkit-appearance:none;
+  position:fixed; z-index:20;
+  top:calc(.5rem + env(safe-area-inset-top));
+  right:calc(.5rem + env(safe-area-inset-right));
+  width:44px; height:44px;        /* a fair thumb target */
+  display:grid; place-items:center;
+  border:1px solid color-mix(in srgb, var(--ink) 25%, transparent); border-radius:50%;
+  background:color-mix(in srgb, var(--paper-tone) 55%, transparent);
+  color:var(--ink);
+  cursor:pointer;
+  touch-action:manipulation; -webkit-tap-highlight-color:transparent;
+  transition:background .25s ease, color .25s ease, border-color .25s ease;
+}
+.mute[hidden]{ display:none; }
+.mute svg{ width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.4; stroke-linecap:round; stroke-linejoin:round; }
+.mute[aria-pressed="true"] .mute-on, .mute[aria-pressed="false"] .mute-off{ display:none; }
+.mute:active{ background:color-mix(in srgb, var(--accent) 18%, transparent); color:var(--ink); }
+@media (hover:hover){ .mute:hover{ color:var(--ink); border-color:var(--accent); } }
+.scene:not(.is-ready) ~ .mute{ visibility:hidden; }   /* arrives with the envelope */
+body:not(.is-sealed) .mute{ position:absolute; }       /* once open, it stays at the top rather than riding over the card */
+
+/* ── motion: the entrance, the idle seal, and the quiet arrival after a skip ── */
 @media (prefers-reduced-motion:no-preference){
-  .scene:not(.is-opening) .seal{ animation:seal-breathe 3.4s 1.8s ease-in-out infinite; }
+  .scene.is-ready .greet{ animation:rise-in 1s .05s var(--ease-out) backwards; }
+  .scene.is-ready .env-wrap{ animation:env-in 1.2s .15s var(--ease-out) backwards; }
+  .scene.is-ready .hint, .scene.is-ready ~ .mute{ animation:fade-in .9s 1s ease backwards; }
+  @keyframes rise-in{ from{ opacity:0; transform:translateY(12px); } }
+  @keyframes env-in { from{ opacity:0; transform:translateY(26px) scale(.965); } }
+  @keyframes fade-in{ from{ opacity:0; } }
+
+  .scene.is-ready .seal{ animation:seal-breathe 3.6s 2s ease-in-out infinite; }
   @keyframes seal-breathe{
     0%,100%{ transform:translate(-50%,-50%) scale(1); }
-    50%    { transform:translate(-50%,-50%) scale(1.055); }
+    50%    { transform:translate(-50%,-50%) scale(1.035); }
   }
-  .envelope:hover .seal,.envelope:focus-visible .seal{ animation-play-state:paused; }
+  .scene.is-ready .seal-ring{ animation:seal-ring 3.6s 2s cubic-bezier(.2,.6,.3,1) infinite; }
+  @keyframes seal-ring{
+    0%      { opacity:.75; transform:scale(1); }
+    55%,100%{ opacity:0;   transform:scale(1.8); }
+  }
+
+  .invite.is-soft > *{ animation:rise-in .9s calc(.08s + var(--i,0) * .06s) var(--ease-out) backwards; }
+
+  .scene.is-ready .greet .ink, .invite.is-here .ink{
+    -webkit-mask:linear-gradient(90deg,#000 45%,transparent 55%) 100% 0/220% 100% no-repeat;
+            mask:linear-gradient(90deg,#000 45%,transparent 55%) 100% 0/220% 100% no-repeat;
+    animation:write 1.5s .7s cubic-bezier(.4,.1,.4,1) both;
+  }
+  .invite.is-here .ink{ animation-delay:.35s; }
+  .invite.is-print .ink{ visibility:hidden; }        /* on the folded letter it is still blank: written once it's in hand */
+  @keyframes write{ to{ -webkit-mask-position:0 0; mask-position:0 0; } }
 }
 @media (prefers-reduced-motion:reduce){
-  .scene,.invite,.seal-half,.envelope,.letter{ transition-duration:.01ms; }
-  .is-opening .env-flap,.is-opening .letter,.is-opening .fold,
-  .is-opening .fold-shade{ animation-duration:.01ms; animation-delay:0ms; }
+  .scene,.invite,.greet,.hint,.seal-half,.env-recede,.letter{ transition-duration:.01ms; }
 }
 </style>
 </head>
@@ -388,13 +563,18 @@ body.is-sealed{ overflow:hidden; }
 
 <!-- ════════════════════════════════════════════════════════
      EDIT EVERYTHING HERE. Nothing else needs touching.
+
+     Personal links: add ?to=Priya%20Sharma to the address and the envelope
+     reads "For Priya Sharma", the card opens "Dear Priya Sharma," and the
+     name goes into the reply. links.html makes these links for a whole list.
      ════════════════════════════════════════════════════════ -->
 <script>
 const INVITE = {
-  monogram: "A",                            // the letter pressed into the wax
-  lead:     "Please join us to celebrate",
-  name:     "Ananya",
-  occasion: "as she turns thirty",
+  greeting: "You're invited",               // above the envelope, when the link has no ?to=
+  monogram: "A&A",                          // pressed into the wax
+  lead:     "Together with their families",
+  names:    ["Ankita", "Akash"],            // one name, or two
+  occasion: "invite you to celebrate their wedding",
 
   when: [
     "Saturday, the fourteenth of March",
@@ -406,56 +586,75 @@ const INVITE = {
   address: ["42 Rosewood Lane", "Bengaluru 560001"],
   notes:   ["Garden formal", "Dinner and dancing to follow"],
 
-  rsvpBy:    "1 March",
-  rsvpEmail: "ananya@example.com",
-  from:      "With love, Meera & Arun",
+  rsvpBy:       "1 March",
+  rsvpEmail:    "ankita.akash@example.com",
+  rsvpWhatsapp: "",                         // e.g. "919876543210" — if set, replies go to WhatsApp instead
+  from:         "With love, Ankita & Akash",
 
-  // used by Add to calendar — local time, 24-hour
+  // used by Add to calendar and the map link — local time at the venue, 24-hour
   calendar: {
-    start: "2026-03-14T19:00",
-    end:   "2026-03-14T23:30",
-    title: "Ananya turns thirty",
-    where: "The Glasshouse, 42 Rosewood Lane, Bengaluru 560001"
+    start:    "2026-03-14T19:00",
+    end:      "2026-03-14T23:30",
+    timezone: "Asia/Kolkata",               // so guests in other time zones get the right hour
+    title:    "Ankita & Akash's wedding",
+    where:    "The Glasshouse, 42 Rosewood Lane, Bengaluru 560001"
   }
 };
 </script>
 
 <!-- scene one -->
 <div class="scene" id="scene">
-  <button class="envelope" id="envelope" aria-label="Open your invitation">
-    <span class="env-part env-back"></span>
+  <p class="greet" id="greet"></p>
 
-    <span class="letter" id="letter" aria-hidden="true">
+  <div class="env-wrap" id="env-wrap">
+    <button class="envelope" id="envelope" type="button" aria-label="Open your invitation">
+      <span class="env-part env-back env-recede"></span>
+      <span class="env-part env-front env-recede">
+        <span class="env-left"></span>
+        <span class="env-right"></span>
+        <span class="env-bottom"></span>
+        <span class="env-creases"></span>
+        <span class="env-flap-shadow"></span>
+      </span>
+      <span class="env-part env-flap-wrap env-recede">
+        <span class="env-flap">
+          <span class="flap-face flap-out"></span>
+          <span class="flap-face flap-in"></span>
+        </span>
+      </span>
+      <span class="seal" aria-hidden="true">
+        <span class="seal-ring"></span>
+        <span class="seal-half l"><span class="seal-face" data-mono></span></span>
+        <span class="seal-half r"><span class="seal-face" data-mono></span></span>
+      </span>
+    </button>
+    <span class="env-shadow env-recede" aria-hidden="true"></span>
+
+    <!-- the card itself is printed onto these leaves when the seal is broken -->
+    <span class="letter" id="letter" aria-hidden="true" inert>
       <span class="fold mid">
-        <span class="fold-face"></span>
-        <span class="fold top"><span class="fold-face"></span><span class="fold-shade"></span></span>
-        <span class="fold bot"><span class="fold-face"></span><span class="fold-shade"></span></span>
+        <span class="face front" data-k="1"></span>
+        <span class="fold top">
+          <span class="face front" data-k="0"></span>
+          <span class="face back"></span>
+        </span>
+        <span class="fold bot">
+          <span class="face front" data-k="2"></span>
+          <span class="face back"><span class="face-mono" data-mono></span></span>
+        </span>
       </span>
     </span>
+  </div>
 
-    <span class="env-part env-left"></span>
-    <span class="env-part env-right"></span>
-    <span class="env-part env-bottom"></span>
-    <span class="env-part env-creases" aria-hidden="true"></span>
-    <span class="env-part env-flap-shadow" aria-hidden="true"></span>
-    <span class="env-part env-flap">
-      <span class="flap-face flap-out"></span>
-      <span class="flap-face flap-in"></span>
-    </span>
-
-    <span class="seal" aria-hidden="true">
-      <span class="seal-half l"><span class="seal-face" data-mono></span></span>
-      <span class="seal-half r"><span class="seal-face" data-mono></span></span>
-    </span>
-  </button>
   <p class="hint" id="hint">Tap the seal to open</p>
 </div>
 
 <!-- scene two -->
-<article class="invite" id="invite" aria-hidden="true">
+<article class="invite" id="invite" aria-hidden="true" inert>
   <p class="invite-mono" aria-hidden="true" data-mono></p>
+  <p class="invite-dear" id="i-dear" hidden></p>
   <p class="invite-lead" id="i-lead"></p>
-  <h1 class="invite-name" id="i-name"></h1>
+  <h1 class="invite-name" id="i-name" tabindex="-1"></h1>
   <p class="invite-occasion" id="i-occasion"></p>
 
   <section class="invite-block"><p class="invite-when" id="i-when"></p></section>
@@ -463,6 +662,7 @@ const INVITE = {
   <section class="invite-block">
     <p class="invite-venue" id="i-venue"></p>
     <p class="invite-address" id="i-address"></p>
+    <a class="invite-map" id="i-map" target="_blank" rel="noopener">View on map</a>
     <p class="invite-notes" id="i-notes"></p>
   </section>
 
@@ -477,131 +677,333 @@ const INVITE = {
   <p class="invite-from" id="i-from"></p>
 </article>
 
+<!-- shown only where sound can play -->
+<button class="mute" id="mute" type="button" aria-label="Mute sound" aria-pressed="false" hidden>
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M4.5 9.5h3L11.5 6v12l-4-3.5h-3z"/>
+    <path class="mute-on"  d="M14.8 9.4a3.8 3.8 0 0 1 0 5.2M17.3 7a7.2 7.2 0 0 1 0 10"/>
+    <path class="mute-off" d="M15 9.5l5 5M20 9.5l-5 5"/>
+  </svg>
+</button>
+
 <script>
 (() => {
   const $ = id => document.getElementById(id);
-  const lines = a => a.join("<br>");
+  const enc = encodeURIComponent;
 
-  const scene = $("scene"), envelope = $("envelope"),
+  const scene = $("scene"), wrap = $("env-wrap"), envelope = $("envelope"),
         letter = $("letter"), invite = $("invite");
 
+  /* ── the guest: ?to=Priya%20Sharma → "Priya Sharma" ──
+     already decoded by URLSearchParams (%20 and + become spaces, bad escapes can't throw);
+     then tidied and capped here, and only ever set as text, never as markup */
+  const tidyName = raw => {
+    let s = raw.normalize("NFC")                                       // é typed as e + accent becomes one é
+      .replace(/[^\p{L}\p{M}\p{N}\s.'’&,()\u200C\u200D-]/gu, "")       // letters of any script, and the punctuation names use
+      .replace(/\s+/g, " ").trim();
+    const letters = typeof Intl.Segmenter === "function"
+      ? [...new Intl.Segmenter().segment(s)].map(g => g.segment)       // cut between letters, never through an accent
+      : [...s];
+    s = letters.slice(0, 40).join("");
+    if (letters.length > 40 && s.includes(" ")) s = s.slice(0, s.lastIndexOf(" "));   // end on a whole word
+    s = s.trim();
+    // all lower case or all capitals reads as typed in a hurry, so give it capitals; anything mixed is left as written
+    if (s === s.toLowerCase() || s === s.toUpperCase())
+      s = s.toLowerCase().replace(/(^|[\s'’-])(\p{L})/gu, (m, before, first) => before + first.toUpperCase());
+    return s;
+  };
+  const guest = tidyName(new URLSearchParams(location.search).get("to") || "");
+  const ua = navigator.userAgent;
+  const iOS = /iP(hone|ad|od)/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  const iOSSafari = iOS && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+  const android = /Android/.test(ua);
+  const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;   // no buzzing, no sound
+
+  /* ── haptics: a little feel in the hand, where phones allow it ──
+     (iOS Safari has no navigator.vibrate, so there this is silent) */
+  const BUZZ = {
+    press:  8,                     // the wax gives under the thumb
+    crack:  24,                    // the seal breaks
+    flap:   [6, 90, 6, 90, 6],     // the flap swinging open
+    unfold: [10, 70, 10],          // the letter lies flat
+    tap:    6                      // reply, map, calendar
+  };
+  const haptic = "vibrate" in navigator && !calm;
+  const buzz = pattern => haptic && pattern && navigator.vibrate(pattern);
+
+  /* ── sound: made on the spot, no files, and kept quiet ──
+     each cue is a few voices: a burst of filtered noise (wax, paper) or a pure tone (the chime).
+     hz is [from, to]; at, attack and dur are in seconds */
+  const SOUND = {
+    press:  [{ noise:"bandpass", hz:[2600], q:1.4, dur:.035, gain:.08 }],
+    crack:  [{ noise:"highpass", hz:[2400], dur:.05, gain:.2 },
+             { noise:"bandpass", hz:[1300, 500], q:2, at:.01, dur:.09, gain:.12 },
+             { wave:"triangle",  hz:[420, 140], dur:.08, gain:.07 }],
+    flap:   [{ noise:"bandpass", hz:[500, 1700], q:.9, attack:.3, dur:.85, gain:.06 }],
+    rise:   [{ noise:"bandpass", hz:[900, 2800], q:.7, attack:.22, dur:.55, gain:.05 }],
+    unfold: [{ wave:"sine", hz:[880],    attack:.01, dur:1.6, gain:.05 },
+             { wave:"sine", hz:[1318.5], at:.12, attack:.01, dur:1.4, gain:.035 }],
+    tap:    [{ noise:"bandpass", hz:[3200], q:1.6, dur:.025, gain:.05 }]
+  };
+  const VOLUME = .5, MUTED = "invite:muted";
+  const AC = window.AudioContext || window.webkitAudioContext;
+  const audible = !!AC && !calm;
+  let muted = false, ctx, out, hiss;
+  try { muted = localStorage.getItem(MUTED) === "1"; } catch {}
+
+  // made on the first tap (browsers allow sound only after one), and woken if the phone put it to sleep
+  const wake = () => {
+    if (!audible || muted) return null;
+    if (!ctx) {
+      ctx = new AC();
+      out = ctx.createGain();
+      out.gain.value = VOLUME;
+      out.connect(ctx.destination);
+      hiss = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);   // a second of white noise, coloured per cue
+      const d = hiss.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    }
+    if (ctx.state !== "running") ctx.resume().catch(() => {});
+    return ctx;
+  };
+
+  const play = voices => {
+    if (!voices || !wake()) return;
+    const now = ctx.currentTime + .005;
+    voices.forEach(v => {
+      const t = now + (v.at || 0), end = t + v.dur, [from, to = from] = v.hz;
+      const src = v.noise ? ctx.createBufferSource() : ctx.createOscillator();
+      const pitch = v.noise ? ctx.createBiquadFilter() : src;    // noise takes its colour from a filter
+      const env = ctx.createGain();
+      if (v.noise) { src.buffer = hiss; pitch.type = v.noise; pitch.Q.value = v.q || 1; src.connect(pitch); }
+      else src.type = v.wave;
+      pitch.frequency.setValueAtTime(from, t);
+      if (to !== from) pitch.frequency.exponentialRampToValueAtTime(to, end);
+      env.gain.setValueAtTime(0, t);
+      env.gain.linearRampToValueAtTime(v.gain, t + (v.attack || .003));
+      env.gain.exponentialRampToValueAtTime(.0001, end);
+      pitch.connect(env);
+      env.connect(out);
+      src.start(t);
+      src.stop(end + .02);
+    });
+  };
+
+  // one moment, felt and heard
+  const cue = name => { buzz(BUZZ[name]); play(SOUND[name]); };
+
+  const mute = $("mute");
+  if (audible) {
+    mute.hidden = false;
+    mute.setAttribute("aria-pressed", muted);
+    mute.addEventListener("click", () => {
+      muted = !muted;
+      try { localStorage.setItem(MUTED, muted ? "1" : "0"); } catch {}
+      mute.setAttribute("aria-pressed", muted);
+      // anything still ringing fades out rather than clicking off
+      if (out) out.gain.setTargetAtTime(muted ? 0 : VOLUME, ctx.currentTime, muted ? .015 : .001);
+      if (!muted) play(SOUND.tap);
+    });
+  }
+
   /* ── fill the card ───────────────────────────────────────── */
+  const span = (text, className = "") => Object.assign(document.createElement("span"), { className, textContent:text });
+
   document.querySelectorAll("[data-mono]").forEach(el => el.textContent = INVITE.monogram);
+  document.querySelector(".seal").classList.toggle("is-long", [...INVITE.monogram].length > 1);
+
+  // the name is written in by hand, on the envelope and again on the card
+  if (guest) {
+    $("greet").replaceChildren("For ", span(guest, "ink"));
+    $("i-dear").replaceChildren("Dear ", span(guest, "ink"), ",");
+    $("i-dear").hidden = false;
+  } else $("greet").textContent = INVITE.greeting;
+
   $("i-lead").textContent     = INVITE.lead;
-  $("i-name").textContent     = INVITE.name;
+  $("i-name").replaceChildren(...INVITE.names.flatMap((n, i) => i ? [span("&", "invite-amp"), span(n)] : [span(n)]));
   $("i-occasion").textContent = INVITE.occasion;
-  $("i-when").innerHTML       = lines(INVITE.when);
+  $("i-when").textContent     = INVITE.when.join("\n");
   $("i-venue").textContent    = INVITE.venue;
-  $("i-address").innerHTML    = lines(INVITE.address);
-  $("i-notes").innerHTML      = lines(INVITE.notes);
+  $("i-address").textContent  = INVITE.address.join("\n");
+  $("i-notes").textContent    = INVITE.notes.join("\n");
   $("i-rsvpby").textContent   = `Kindly reply by ${INVITE.rsvpBy}`;
   $("i-from").textContent     = INVITE.from;
-  document.title              = `${INVITE.name} — you're invited`;
+  document.title              = `${INVITE.names.join(" & ")} — you're invited`;
+  [...invite.children].forEach((el, i) => el.style.setProperty("--i", i));
 
   // most people open this on a phone, but say the right thing on a laptop
   if (matchMedia("(hover:hover) and (pointer:fine)").matches)
     $("hint").textContent = "Click the seal to open";
 
-  $("i-rsvp").href = `mailto:${INVITE.rsvpEmail}`
-    + `?subject=${encodeURIComponent("RSVP — " + INVITE.calendar.title)}`
-    + `&body=${encodeURIComponent("I'd love to come.\n\nName:\nGuests:\n")}`;
+  // iOS only applies :active (the seal giving under the thumb) once a touch listener exists
+  addEventListener("touchstart", () => {}, { passive:true });
+
+  /* ── replies, directions, calendar ───────────────────────── */
+  const cal = INVITE.calendar;
+
+  const wa = INVITE.rsvpWhatsapp.replace(/\D/g, "");
+  $("i-rsvp").href = wa
+    ? `https://wa.me/${wa}?text=${enc(`Hello! I'd love to come to ${cal.title}.` + (guest ? ` — ${guest}` : ""))}`
+    : `mailto:${INVITE.rsvpEmail}?subject=${enc("RSVP — " + cal.title)}`
+      + `&body=${enc(`I'd love to come.\n\nName: ${guest}\nGuests:\n`)}`;
+
+  $("i-map").href = iOS
+    ? `https://maps.apple.com/?q=${enc(cal.where)}`
+    : `https://www.google.com/maps/search/?api=1&query=${enc(cal.where)}`;
+
+  ["i-rsvp","i-map","i-cal"].forEach(id => $(id).addEventListener("click", () => cue("tap")));
+
+  // the venue's wall-clock time → the absolute moment, so it lands right in any time zone
+  const tzOffset = (date, tz) => {
+    const p = Object.fromEntries(new Intl.DateTimeFormat("en-US", {
+      timeZone:tz, hourCycle:"h23", year:"numeric", month:"2-digit", day:"2-digit",
+      hour:"2-digit", minute:"2-digit", second:"2-digit"
+    }).formatToParts(date).map(x => [x.type, x.value]));
+    return Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second) - date;
+  };
+  const utc   = d => d.toISOString().replace(/[-:]|\.\d{3}/g, "");
+  const stamp = local => {
+    if (!cal.timezone) return local.replace(/[-:]/g, "") + "00";       // floating: the guest's own clock
+    const guess = new Date(local + ":00Z");
+    return utc(new Date(guess - tzOffset(guess, cal.timezone)));
+  };
+  const text = s => String(s).replace(/[\\;,]/g, "\\$&").replace(/\n/g, "\\n");
 
   $("i-cal").addEventListener("click", () => {
-    const stamp = s => s.replace(/[-:]/g, "") + "00";
+    const start = stamp(cal.start), end = stamp(cal.end);
+
+    // Android: straight into Google Calendar, which owns most of those phones
+    if (android) {
+      open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${enc(cal.title)}`
+         + `&dates=${start}/${end}&location=${enc(cal.where)}`, "_blank", "noopener");
+      return;
+    }
+
     const ics = [
-      "BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//invitation//EN","BEGIN:VEVENT",
-      `UID:${Date.now()}@invitation`,
-      `DTSTAMP:${stamp(new Date().toISOString().slice(0,16))}Z`,
-      `DTSTART:${stamp(INVITE.calendar.start)}`,
-      `DTEND:${stamp(INVITE.calendar.end)}`,
-      `SUMMARY:${INVITE.calendar.title}`,
-      `LOCATION:${INVITE.calendar.where}`,
+      "BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//invitation//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH",
+      "BEGIN:VEVENT",
+      `UID:${start}-${cal.title.replace(/\W+/g, "-").toLowerCase()}@invitation`,   // the same event twice stays one event
+      `DTSTAMP:${utc(new Date())}`,
+      `DTSTART:${start}`,
+      `DTEND:${end}`,
+      `SUMMARY:${text(cal.title)}`,
+      `LOCATION:${text(cal.where)}`,
       "END:VEVENT","END:VCALENDAR"
     ].join("\r\n");
+
+    // iPhone Safari: opening the event directly brings up the Add to Calendar sheet
+    if (iOSSafari) { location.href = "data:text/calendar;charset=utf-8," + enc(ics); return; }
+
     const url = URL.createObjectURL(new Blob([ics], { type:"text/calendar" }));
-    const a = Object.assign(document.createElement("a"), {
-      href:url, download:INVITE.calendar.title.replace(/\s+/g,"-").toLowerCase() + ".ics"
-    });
-    a.click();
-    URL.revokeObjectURL(url);
+    Object.assign(document.createElement("a"), {
+      href:url, download:cal.title.replace(/\W+/g, "-").toLowerCase() + ".ics"
+    }).click();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
   });
 
-  /* ── measure: the folded letter is cut to the real card ───── */
+  /* ── measure: the folded letter is cut from the real card ── */
   function measure(){
-    window.scrollTo(0,0);
+    scrollTo(0, 0);
+    wrap.getAnimations?.().forEach(a => a.finish());   // a tap during the entrance: settle it first
 
-    // the card's true layout box, with its entrance transform set aside
-    const held = invite.style.cssText;
-    invite.style.transition = "none";
-    invite.style.transform  = "none";
     const card = invite.getBoundingClientRect();
-    const env  = envelope.getBoundingClientRect();
-    invite.style.cssText = held;
-
+    const env  = wrap.getBoundingClientRect();
     const W = card.width, panel = card.height / 3;
-    if (!W || !env.width) return;
+    if (!W || !env.width) return false;
 
     // as large as the envelope will take, in both directions
-    const s0 = Math.min(env.width * .86 / W, env.height * .8 / panel);
+    const s0 = Math.min(env.width * .84 / W, env.height * .8 / panel);
 
     const s = letter.style;
     s.width  = W + "px";
     s.height = panel + "px";
     s.setProperty("--s0", s0);
     s.setProperty("--x0", (env.width - W * s0) / 2 + "px");
-    s.setProperty("--y0", env.height * .1 + "px");
+    s.setProperty("--y0", env.height * .12 + "px");
     s.setProperty("--x1", (env.width - W * s0) / 2 + "px");
-    s.setProperty("--y1", -(panel * s0 * .72) + "px");
+    s.setProperty("--y1", env.height * .03 - panel * s0 + "px");   // clear of the pocket
     s.setProperty("--x2", card.left - env.left + "px");
-    s.setProperty("--y2", card.top - env.top + panel + "px");   // the middle third
+    s.setProperty("--y2", card.top - env.top + panel + "px");      // the middle third
+
+    // print the card onto each leaf, so what unfolds is the invitation itself
+    letter.querySelectorAll(".face.front").forEach(face => {
+      const k = +face.dataset.k, print = invite.cloneNode(true);
+      ["id","inert","aria-hidden"].forEach(a => print.removeAttribute(a));
+      print.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
+      print.classList.add("is-print");
+      Object.assign(print.style, { width:W + "px", height:card.height + "px", top:-k * panel + "px" });
+      face.replaceChildren(print, Object.assign(document.createElement("span"), { className:"shade" }));
+    });
+    return true;
   }
 
   /* ── the opening ─────────────────────────────────────────── */
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches && !location.search.includes("motion");
   const timers = [];
-  let state = "sealed";
+  const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+  let state = "sealed", width = innerWidth;
 
-  const arrive = () => {
-    invite.setAttribute("aria-hidden","false");
+  const arrive = soft => {
+    ["inert","aria-hidden"].forEach(a => invite.removeAttribute(a));
+    invite.classList.toggle("is-soft", soft);
     invite.classList.add("is-here");
     document.body.classList.remove("is-sealed");
-    const h = invite.querySelector("h1");
-    h.setAttribute("tabindex","-1");
-    h.focus({ preventScroll:true });
+    $("i-name").focus({ preventScroll:true });
   };
 
+  // the live card is already exactly under the letter: the swap is invisible
+  const handoff = () => {
+    state = "open";
+    arrive(false);
+    letter.classList.add("is-spent");
+    at(320, () => scene.remove());
+  };
+
+  // a second tap, a turned phone, or reduced motion: go straight to the card
   const finish = () => {
     state = "open";
     timers.forEach(clearTimeout);
     scene.classList.add("is-gone");
+    arrive(true);
     setTimeout(() => scene.remove(), 500);
-    arrive();
   };
 
-  envelope.addEventListener("click", () => {
-    if (state === "opening") return finish();   // a second tap skips ahead
-    if (state !== "sealed") return;
+  const unseal = () => {
+    if (!measure()) return;
     state = "opening";
-    envelope.disabled = true;
-    measure();
+    envelope.setAttribute("aria-disabled", "true");
+    cue("crack");
 
     if (still) return finish();
 
     scene.classList.add("is-opening");
-    const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+    at(200,  () => cue("flap"));                        // the flap swings open
+    at(800,  () => cue("rise"));                        // the letter slides up out of the pocket
+    at(1340, () => letter.classList.add("is-clear"));   // out of the pocket, now in front
+    at(1400, () => wrap.classList.add("is-spent"));     // the envelope is set down
+    at(3130, () => cue("unfold"));                      // the top leaf lies flat
+    at(3150, handoff);
+  };
 
-    at(1550, () => letter.classList.add("is-clear"));   // now in front of the envelope
-    at(1700, () => envelope.classList.add("is-spent")); // the envelope recedes
-    at(3620, arrive);                                   // the words settle in
-    at(3700, () => letter.classList.add("is-spent"));
-    at(4120, () => { scene.classList.add("is-gone"); state = "open"; });
-    at(4600, () => scene.remove());
+  envelope.addEventListener("pointerdown", () => state === "sealed" && cue("press"));
+
+  scene.addEventListener("click", e => {
+    if (state === "opening") return finish();
+    if (state === "sealed" && envelope.contains(e.target)) unseal();
   });
 
-  /* fonts change the card's height, so measure once they land */
-  (document.fonts ? document.fonts.ready : Promise.resolve()).then(measure);
-  measure();
-  addEventListener("resize", () => { if (state === "sealed") measure(); });
+  addEventListener("resize", () => {
+    if (state === "opening" && innerWidth !== width) finish();
+    width = innerWidth;
+  });
+
+  /* show the envelope once its type has arrived — but never wait long */
+  const fonts = document.fonts
+    ? Promise.all(['1em "Pinyon Script"', '1em "Bodoni Moda"', 'italic 1em "Bodoni Moda"'].map(f => document.fonts.load(f)))
+    : Promise.resolve();
+  Promise.race([fonts, new Promise(r => setTimeout(r, 2500))])
+    .catch(() => {})
+    .then(() => scene.classList.add("is-ready"));
 })();
 </script>
 </body>
