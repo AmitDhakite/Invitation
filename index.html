@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#EDE6DA">
+<title>You're invited</title>
+<meta name="description" content="A sealed invitation. Tap to open.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..500&family=Pinyon+Script&display=swap" rel="stylesheet">
+
+<style>
+/* ─────────────────────────────────────────────
+   tokens
+   ───────────────────────────────────────────── */
+:root{
+  --sage:       #96A386;
+  --sage-deep:  #6E7C60;
+  --sage-light: #AEBB9E;
+  --sage-liner: #C6D0B7;
+  --wall:       #EDE6DA;
+  --ivory:      #FBF7EF;
+  --crease:     rgba(150,140,115,.34);
+  --blush:      #C08D8B;
+  --blush-deep: #8F6260;
+  --ink:        #2F3428;
+  --ink-soft:   #5E6650;
+
+  --serif: "Bodoni Moda", Didot, "Times New Roman", serif;
+  --script: "Pinyon Script", cursive;
+}
+
+*,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+
+html{ -webkit-text-size-adjust:100%; background:var(--wall); }
+
+body{
+  min-height:100svh;
+  font-family:var(--serif);
+  color:var(--ink);
+  background:var(--wall);
+  /* the soft wall-light of the photograph */
+  background-image:
+    radial-gradient(120% 90% at 50% 6%, #F7F2E8 0%, rgba(247,242,232,0) 62%),
+    radial-gradient(130% 110% at 50% 116%, rgba(118,110,92,.2) 0%, rgba(118,110,92,0) 56%);
+  background-attachment:fixed;
+
+  /* flex + auto margins: centres the card, but a tall card still
+     scrolls on a phone instead of being clipped off the top */
+  display:flex;
+  flex-direction:column;
+  padding:calc(clamp(1.1rem,4.5vw,3rem) + env(safe-area-inset-top))
+          calc(clamp(1.1rem,4.5vw,3rem) + env(safe-area-inset-right))
+          calc(clamp(1.1rem,4.5vw,3rem) + env(safe-area-inset-bottom))
+          calc(clamp(1.1rem,4.5vw,3rem) + env(safe-area-inset-left));
+  overscroll-behavior-y:contain;
+}
+body.is-sealed{ overflow:hidden; }
+
+:focus-visible{ outline:2px solid var(--sage-deep); outline-offset:5px; border-radius:2px; }
+
+/* ═════════════════════════════════════════════
+   scene one · the sealed envelope
+   ═════════════════════════════════════════════ */
+.scene{
+  position:fixed;
+  inset:0;
+  display:grid;
+  place-content:center;
+  gap:clamp(1.5rem,4.5vh,3rem);
+  justify-items:center;
+  z-index:10;
+}
+.scene.is-gone{ opacity:0; pointer-events:none; transition:opacity .45s ease; }
+
+.envelope{
+  appearance:none; border:0; background:none; padding:0; font:inherit; color:inherit;
+  display:block;
+  cursor:pointer;
+  position:relative;
+  /* the last term keeps the whole envelope in frame on a phone held sideways */
+  width:min(88vw,532px,122svh);
+  aspect-ratio:1.42/1;
+  perspective:1500px;
+  filter:drop-shadow(0 20px 32px rgba(86,80,64,.28));
+  transition:filter .5s ease, opacity .6s ease;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+  user-select:none; -webkit-user-select:none;
+}
+@media (hover:hover){ .envelope:hover{ filter:drop-shadow(0 26px 40px rgba(86,80,64,.34)); } }
+.envelope:active{ filter:drop-shadow(0 13px 20px rgba(86,80,64,.3)); }
+.envelope[disabled]{ cursor:default; }
+
+/* the envelope recedes once the letter is out */
+.envelope.is-spent{ filter:none; }
+.envelope.is-spent .env-part,
+.envelope.is-spent .seal{ opacity:0; transition:opacity .65s ease; }
+
+.env-part{ position:absolute; inset:0; }
+
+.env-back{
+  border-radius:3px;
+  background:linear-gradient(158deg,var(--sage-light) 0%,var(--sage) 48%,var(--sage-deep) 100%);
+}
+
+/* the three folded back panels */
+.env-left,.env-right,.env-bottom{ z-index:3; border-radius:3px; }
+.env-left{   clip-path:polygon(0 0, 50.4% 50%, 0 100%);        background:linear-gradient(100deg,#A9B69A,#96A386); }
+.env-right{  clip-path:polygon(100% 0, 49.6% 50%, 100% 100%);  background:linear-gradient(260deg,#8B9879,#9BA88B); }
+.env-bottom{ clip-path:polygon(0 100.2%, 50% 49.8%, 100% 100.2%); background:linear-gradient(2deg,#7F8D70,#98A587); }
+
+/* the creases where the four panels meet, plus the light falling off centre */
+.env-creases{
+  z-index:4; pointer-events:none; border-radius:3px;
+  background:
+    linear-gradient(to bottom right, transparent calc(50% - .6px), rgba(255,255,255,.2) 50%, transparent calc(50% + .6px)),
+    linear-gradient(to bottom left,  transparent calc(50% - .6px), rgba(255,255,255,.2) 50%, transparent calc(50% + .6px)),
+    radial-gradient(58% 58% at 50% 50%, rgba(58,64,46,.15), rgba(58,64,46,0) 74%);
+}
+
+/* the flap: two faces, so the liner shows as it swings over */
+.env-flap{
+  z-index:5;
+  transform-origin:top center;
+  transform-style:preserve-3d;
+}
+.flap-face{
+  position:absolute; inset:0;
+  clip-path:polygon(0 0, 100% 0, 50% 58.5%);
+  backface-visibility:hidden;
+  border-radius:3px 3px 0 0;
+}
+.flap-out{ background:linear-gradient(172deg,#ADBA9D 0%,#9DAA8D 62%,#8F9C7F 100%); }
+.flap-in{
+  transform:rotateY(180deg);
+  background:linear-gradient(8deg,var(--sage-liner),#B4C0A4 70%,#A4B094);
+}
+/* the shadow the closed flap casts on the panels below it */
+.env-flap-shadow{
+  z-index:4; pointer-events:none;
+  clip-path:polygon(0 0, 100% 0, 50% 62%);
+  background:linear-gradient(180deg, rgba(52,58,42,0) 72%, rgba(52,58,42,.22) 100%);
+  transition:opacity .4s ease;
+}
+
+/* ─────────────────────────────────────────────
+   the wax seal
+   ───────────────────────────────────────────── */
+.seal{
+  position:absolute; z-index:6;
+  top:50%; left:50%;
+  width:clamp(60px,15%,90px);
+  aspect-ratio:1;
+  transform:translate(-50%,-50%);
+}
+.seal-half{
+  position:absolute; inset:0;
+  transition:transform .68s cubic-bezier(.3,.85,.4,1), opacity .68s ease;
+}
+.seal-half.l{ clip-path:polygon(0 0, 53% 0, 46% 100%, 0 100%); }
+.seal-half.r{ clip-path:polygon(53% 0, 100% 0, 100% 100%, 46% 100%); }
+
+.seal-face{
+  position:absolute; inset:0;
+  /* poured wax, not a bead: an uneven edge and a matte surface */
+  border-radius:49% 51% 46% 54% / 53% 47% 53% 47%;
+  background:
+    radial-gradient(84% 84% at 34% 28%, rgba(255,255,255,.28) 0%, rgba(255,255,255,0) 44%),
+    radial-gradient(112% 112% at 50% 42%, #CE9390 0%, var(--blush) 52%, var(--blush-deep) 100%);
+  box-shadow:
+    0 0 0 1px rgba(112,68,66,.3) inset,
+    0 -5px 10px rgba(104,62,60,.34) inset,
+    0 4px 10px rgba(72,56,46,.36);
+  display:grid; place-items:center;
+  font-family:var(--script);
+  font-size:clamp(1.9rem,5.6vw,2.9rem);
+  line-height:1;
+  color:#F6E4E1;
+  text-shadow:0 1px 1px rgba(110,64,62,.55);
+  padding-bottom:.1em;
+}
+/* the pressed rim of the stamp */
+.seal-face::after{
+  content:"";
+  position:absolute; inset:13%;
+  border-radius:inherit;
+  box-shadow:0 0 0 1px rgba(114,68,66,.3) inset, 0 1px 0 rgba(255,255,255,.16) inset;
+}
+
+.hint{
+  font-size:.8rem;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+  transition:opacity .35s ease;
+}
+.scene.is-opening .hint{ opacity:0; }
+
+/* ═════════════════════════════════════════════
+   the folded letter
+   ═════════════════════════════════════════════ */
+.letter{
+  position:absolute;
+  top:0; left:0;
+  z-index:2;                      /* behind the envelope panels, until it is out */
+  transform-origin:top left;
+  transform:translate(var(--x0,0),var(--y0,0)) scale(var(--s0,.3));
+  perspective:1400px;
+  transform-style:preserve-3d;
+  transition:opacity .35s ease;
+}
+.letter.is-clear{ z-index:9; }
+.letter.is-spent{ opacity:0; }
+
+.fold{ position:absolute; left:0; right:0; height:100%; }
+.fold.mid{ top:0; transform-style:preserve-3d; }
+.fold.top{ bottom:100%; transform-origin:bottom center; transform:rotateX(-180deg) translateZ(-.7px); }
+.fold.bot{ top:100%;    transform-origin:top center;    transform:rotateX(180deg)  translateZ(-1.4px); }
+
+.fold-face{
+  position:absolute; inset:0;
+  background:linear-gradient(176deg,#FFFDF8,var(--ivory) 55%,#F4EFE2);
+}
+.fold.mid > .fold-face{
+  /* the two creases, and the shadow the whole stack drops on the wall */
+  box-shadow:
+    0 1px 0 var(--crease) inset,
+    0 -1px 0 var(--crease) inset,
+    0 14px 30px rgba(80,74,58,.22),
+    0 2px 6px rgba(80,74,58,.14);
+}
+/* the leaf edge: what tells you this is three thicknesses of paper */
+.fold.top > .fold-face{
+  box-shadow:0 -1px 0 var(--crease) inset, 0 -10px 24px rgba(80,74,58,.18), 0 -2px 6px rgba(80,74,58,.12);
+}
+.fold.bot > .fold-face{
+  box-shadow:0 1px 0 var(--crease) inset, 0 14px 30px rgba(80,74,58,.2), 0 2px 6px rgba(80,74,58,.12);
+}
+
+/* light sits differently on a leaf that is folded back on itself */
+.fold-shade{
+  position:absolute; inset:0;
+  background:linear-gradient(180deg, rgba(122,110,84,.14), rgba(122,110,84,.02));
+}
+.fold.mid > .fold-shade{ display:none; }
+
+/* ── the opening, orchestrated ── */
+.is-opening .seal-half.l{ transform:translate(-32px,36px) rotate(-27deg); opacity:0; }
+.is-opening .seal-half.r{ transform:translate(31px,41px)  rotate(23deg);  opacity:0; }
+.is-opening .env-flap-shadow{ opacity:0; }
+
+.is-opening .env-flap{ animation:flap-open 1s .3s cubic-bezier(.42,.02,.28,1) forwards; }
+@keyframes flap-open{
+  0%   { transform:rotateX(0deg);   z-index:5; }
+  44%  {                            z-index:5; }
+  45%  {                            z-index:0; }
+  100% { transform:rotateX(-169deg); z-index:0; }
+}
+
+/* out of the envelope, then across to where the card will sit */
+.is-opening .letter{ animation:letter-out 1.6s 1s cubic-bezier(.32,.7,.28,1) forwards; }
+@keyframes letter-out{
+  0%   { transform:translate(var(--x0),var(--y0)) scale(var(--s0)) rotate(0deg); }
+  42%  { transform:translate(var(--x1),var(--y1)) scale(var(--s0)) rotate(-1.1deg); }
+  100% { transform:translate(var(--x2),var(--y2)) scale(1) rotate(0deg); }
+}
+
+.is-opening .fold.bot{ animation:unfold .78s 2.5s cubic-bezier(.34,.88,.32,1) forwards; }
+.is-opening .fold.top{ animation:unfold .78s 2.98s cubic-bezier(.34,.88,.32,1) forwards; }
+@keyframes unfold{ to{ transform:rotateX(0deg) translateZ(0); } }
+
+.is-opening .fold.bot > .fold-shade{ animation:unshade .78s 2.5s ease forwards; }
+.is-opening .fold.top > .fold-shade{ animation:unshade .78s 2.98s ease forwards; }
+@keyframes unshade{ to{ opacity:0; } }
+
+/* ═════════════════════════════════════════════
+   scene two · the invitation
+   ═════════════════════════════════════════════ */
+.invite{
+  width:min(100%,29.5rem);
+  margin:auto;                    /* centres, and still scrolls when taller than the screen */
+  text-align:center;
+  border-radius:2px;
+  padding:clamp(1.9rem,6.5vw,3rem) clamp(1.4rem,5.5vw,2.75rem) clamp(1.7rem,5.5vw,2.5rem);
+  background:
+    /* the creases it was folded along */
+    linear-gradient(180deg, transparent calc(33.333% - 16px), rgba(120,108,84,.05) calc(33.333% - 1px), rgba(150,140,115,.22) 33.333%, rgba(120,108,84,.03) calc(33.333% + 1px), transparent calc(33.333% + 12px)),
+    linear-gradient(180deg, transparent calc(66.666% - 16px), rgba(120,108,84,.05) calc(66.666% - 1px), rgba(150,140,115,.22) 66.666%, rgba(120,108,84,.03) calc(66.666% + 1px), transparent calc(66.666% + 12px)),
+    linear-gradient(176deg,#FFFDF8,var(--ivory) 55%,#F4EFE2);
+  box-shadow:0 18px 44px rgba(80,74,58,.2), 0 2px 6px rgba(80,74,58,.12);
+  opacity:0;
+  transform:scale(.99);
+  transition:opacity .5s ease, transform .5s cubic-bezier(.3,.8,.3,1);
+}
+.invite.is-here{ opacity:1; transform:scale(1); }
+
+.invite-mono{
+  font-family:var(--script);
+  font-size:2rem; line-height:1;
+  color:var(--sage-deep);
+  padding-bottom:.8rem;
+}
+.invite-lead{
+  font-size:.76rem; letter-spacing:.24em; text-transform:uppercase;
+  color:var(--ink-soft);
+}
+.invite-name{
+  font-family:var(--script);
+  font-size:clamp(3.3rem,15vw,4.6rem);
+  line-height:.95;
+  padding:.3rem 0 .1rem;
+}
+.invite-occasion{
+  font-size:clamp(1rem,3.8vw,1.15rem);
+  font-style:italic; font-weight:400;
+  color:var(--ink-soft);
+}
+
+/* the hairlines group who / when / where — they carry the structure */
+.invite-block{
+  padding-block:clamp(1.25rem,4.5vw,1.75rem);
+  border-top:1px solid rgba(110,124,96,.28);
+}
+.invite-block:first-of-type{ margin-top:clamp(1.25rem,4.5vw,1.75rem); }
+
+.invite-when{ font-size:1.01rem; line-height:1.8; }
+.invite-venue{ font-size:1.16rem; padding-bottom:.3rem; }
+.invite-address{ font-size:.94rem; line-height:1.65; color:var(--ink-soft); }
+.invite-notes{ font-size:.9rem; line-height:1.8; font-style:italic; color:var(--ink-soft); padding-top:.8rem; }
+
+.invite-rsvp{
+  padding-top:clamp(1.25rem,4.5vw,1.75rem);
+  border-top:1px solid rgba(110,124,96,.28);
+  display:grid; gap:.9rem; justify-items:center;
+}
+.rsvp-by{ font-size:.82rem; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-soft); }
+.rsvp-actions{ display:flex; flex-wrap:wrap; gap:.6rem; justify-content:center; }
+
+.btn{
+  font-family:var(--serif);
+  font-size:.98rem; letter-spacing:.09em;
+  min-height:48px;                /* a comfortable thumb target */
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:.65em 1.4em;
+  border:1px solid var(--sage-deep); border-radius:1px;
+  background:var(--sage-deep); color:var(--ivory);
+  text-decoration:none; cursor:pointer;
+  touch-action:manipulation; -webkit-tap-highlight-color:transparent;
+  transition:background .2s ease, color .2s ease, border-color .2s ease;
+}
+.btn:active{ background:var(--ink); border-color:var(--ink); }
+.btn-quiet{ background:none; color:var(--sage-deep); border-color:rgba(110,124,96,.45); }
+.btn-quiet:active{ background:rgba(110,124,96,.14); color:var(--ink); border-color:var(--sage-deep); }
+@media (hover:hover){
+  .btn:hover{ background:var(--ink); border-color:var(--ink); }
+  .btn-quiet:hover{ background:rgba(110,124,96,.1); color:var(--ink); border-color:var(--sage-deep); }
+}
+/* phone: the two replies stack full width */
+@media (max-width:26rem){
+  .rsvp-actions{ flex-direction:column; align-self:stretch; width:100%; }
+}
+
+.invite-from{
+  padding-top:clamp(1.3rem,4.5vw,1.9rem);
+  font-size:.93rem; font-style:italic; color:var(--ink-soft);
+}
+
+/* ── no motion, no theatre: go straight to the card ── */
+@media (prefers-reduced-motion:no-preference){
+  .scene:not(.is-opening) .seal{ animation:seal-breathe 3.4s 1.8s ease-in-out infinite; }
+  @keyframes seal-breathe{
+    0%,100%{ transform:translate(-50%,-50%) scale(1); }
+    50%    { transform:translate(-50%,-50%) scale(1.055); }
+  }
+  .envelope:hover .seal,.envelope:focus-visible .seal{ animation-play-state:paused; }
+}
+@media (prefers-reduced-motion:reduce){
+  .scene,.invite,.seal-half,.envelope,.letter{ transition-duration:.01ms; }
+  .is-opening .env-flap,.is-opening .letter,.is-opening .fold,
+  .is-opening .fold-shade{ animation-duration:.01ms; animation-delay:0ms; }
+}
+</style>
+</head>
+
+<body class="is-sealed">
+
+<!-- ════════════════════════════════════════════════════════
+     EDIT EVERYTHING HERE. Nothing else needs touching.
+     ════════════════════════════════════════════════════════ -->
+<script>
+const INVITE = {
+  monogram: "A",                            // the letter pressed into the wax
+  lead:     "Please join us to celebrate",
+  name:     "Ananya",
+  occasion: "as she turns thirty",
+
+  when: [
+    "Saturday, the fourteenth of March",
+    "two thousand twenty-six",
+    "at seven in the evening"
+  ],
+
+  venue:   "The Glasshouse",
+  address: ["42 Rosewood Lane", "Bengaluru 560001"],
+  notes:   ["Garden formal", "Dinner and dancing to follow"],
+
+  rsvpBy:    "1 March",
+  rsvpEmail: "ananya@example.com",
+  from:      "With love, Meera & Arun",
+
+  // used by Add to calendar — local time, 24-hour
+  calendar: {
+    start: "2026-03-14T19:00",
+    end:   "2026-03-14T23:30",
+    title: "Ananya turns thirty",
+    where: "The Glasshouse, 42 Rosewood Lane, Bengaluru 560001"
+  }
+};
+</script>
+
+<!-- scene one -->
+<div class="scene" id="scene">
+  <button class="envelope" id="envelope" aria-label="Open your invitation">
+    <span class="env-part env-back"></span>
+
+    <span class="letter" id="letter" aria-hidden="true">
+      <span class="fold mid">
+        <span class="fold-face"></span>
+        <span class="fold top"><span class="fold-face"></span><span class="fold-shade"></span></span>
+        <span class="fold bot"><span class="fold-face"></span><span class="fold-shade"></span></span>
+      </span>
+    </span>
+
+    <span class="env-part env-left"></span>
+    <span class="env-part env-right"></span>
+    <span class="env-part env-bottom"></span>
+    <span class="env-part env-creases" aria-hidden="true"></span>
+    <span class="env-part env-flap-shadow" aria-hidden="true"></span>
+    <span class="env-part env-flap">
+      <span class="flap-face flap-out"></span>
+      <span class="flap-face flap-in"></span>
+    </span>
+
+    <span class="seal" aria-hidden="true">
+      <span class="seal-half l"><span class="seal-face" data-mono></span></span>
+      <span class="seal-half r"><span class="seal-face" data-mono></span></span>
+    </span>
+  </button>
+  <p class="hint" id="hint">Tap the seal to open</p>
+</div>
+
+<!-- scene two -->
+<article class="invite" id="invite" aria-hidden="true">
+  <p class="invite-mono" aria-hidden="true" data-mono></p>
+  <p class="invite-lead" id="i-lead"></p>
+  <h1 class="invite-name" id="i-name"></h1>
+  <p class="invite-occasion" id="i-occasion"></p>
+
+  <section class="invite-block"><p class="invite-when" id="i-when"></p></section>
+
+  <section class="invite-block">
+    <p class="invite-venue" id="i-venue"></p>
+    <p class="invite-address" id="i-address"></p>
+    <p class="invite-notes" id="i-notes"></p>
+  </section>
+
+  <section class="invite-rsvp">
+    <p class="rsvp-by" id="i-rsvpby"></p>
+    <div class="rsvp-actions">
+      <a class="btn" id="i-rsvp" href="#">Reply to this invitation</a>
+      <button class="btn btn-quiet" id="i-cal" type="button">Add to calendar</button>
+    </div>
+  </section>
+
+  <p class="invite-from" id="i-from"></p>
+</article>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const lines = a => a.join("<br>");
+
+  const scene = $("scene"), envelope = $("envelope"),
+        letter = $("letter"), invite = $("invite");
+
+  /* ── fill the card ───────────────────────────────────────── */
+  document.querySelectorAll("[data-mono]").forEach(el => el.textContent = INVITE.monogram);
+  $("i-lead").textContent     = INVITE.lead;
+  $("i-name").textContent     = INVITE.name;
+  $("i-occasion").textContent = INVITE.occasion;
+  $("i-when").innerHTML       = lines(INVITE.when);
+  $("i-venue").textContent    = INVITE.venue;
+  $("i-address").innerHTML    = lines(INVITE.address);
+  $("i-notes").innerHTML      = lines(INVITE.notes);
+  $("i-rsvpby").textContent   = `Kindly reply by ${INVITE.rsvpBy}`;
+  $("i-from").textContent     = INVITE.from;
+  document.title              = `${INVITE.name} — you're invited`;
+
+  // most people open this on a phone, but say the right thing on a laptop
+  if (matchMedia("(hover:hover) and (pointer:fine)").matches)
+    $("hint").textContent = "Click the seal to open";
+
+  $("i-rsvp").href = `mailto:${INVITE.rsvpEmail}`
+    + `?subject=${encodeURIComponent("RSVP — " + INVITE.calendar.title)}`
+    + `&body=${encodeURIComponent("I'd love to come.\n\nName:\nGuests:\n")}`;
+
+  $("i-cal").addEventListener("click", () => {
+    const stamp = s => s.replace(/[-:]/g, "") + "00";
+    const ics = [
+      "BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//invitation//EN","BEGIN:VEVENT",
+      `UID:${Date.now()}@invitation`,
+      `DTSTAMP:${stamp(new Date().toISOString().slice(0,16))}Z`,
+      `DTSTART:${stamp(INVITE.calendar.start)}`,
+      `DTEND:${stamp(INVITE.calendar.end)}`,
+      `SUMMARY:${INVITE.calendar.title}`,
+      `LOCATION:${INVITE.calendar.where}`,
+      "END:VEVENT","END:VCALENDAR"
+    ].join("\r\n");
+    const url = URL.createObjectURL(new Blob([ics], { type:"text/calendar" }));
+    const a = Object.assign(document.createElement("a"), {
+      href:url, download:INVITE.calendar.title.replace(/\s+/g,"-").toLowerCase() + ".ics"
+    });
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  /* ── measure: the folded letter is cut to the real card ───── */
+  function measure(){
+    window.scrollTo(0,0);
+
+    // the card's true layout box, with its entrance transform set aside
+    const held = invite.style.cssText;
+    invite.style.transition = "none";
+    invite.style.transform  = "none";
+    const card = invite.getBoundingClientRect();
+    const env  = envelope.getBoundingClientRect();
+    invite.style.cssText = held;
+
+    const W = card.width, panel = card.height / 3;
+    if (!W || !env.width) return;
+
+    // as large as the envelope will take, in both directions
+    const s0 = Math.min(env.width * .86 / W, env.height * .8 / panel);
+
+    const s = letter.style;
+    s.width  = W + "px";
+    s.height = panel + "px";
+    s.setProperty("--s0", s0);
+    s.setProperty("--x0", (env.width - W * s0) / 2 + "px");
+    s.setProperty("--y0", env.height * .1 + "px");
+    s.setProperty("--x1", (env.width - W * s0) / 2 + "px");
+    s.setProperty("--y1", -(panel * s0 * .72) + "px");
+    s.setProperty("--x2", card.left - env.left + "px");
+    s.setProperty("--y2", card.top - env.top + panel + "px");   // the middle third
+  }
+
+  /* ── the opening ─────────────────────────────────────────── */
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches && !location.search.includes("motion");
+  const timers = [];
+  let state = "sealed";
+
+  const arrive = () => {
+    invite.setAttribute("aria-hidden","false");
+    invite.classList.add("is-here");
+    document.body.classList.remove("is-sealed");
+    const h = invite.querySelector("h1");
+    h.setAttribute("tabindex","-1");
+    h.focus({ preventScroll:true });
+  };
+
+  const finish = () => {
+    state = "open";
+    timers.forEach(clearTimeout);
+    scene.classList.add("is-gone");
+    setTimeout(() => scene.remove(), 500);
+    arrive();
+  };
+
+  envelope.addEventListener("click", () => {
+    if (state === "opening") return finish();   // a second tap skips ahead
+    if (state !== "sealed") return;
+    state = "opening";
+    envelope.disabled = true;
+    measure();
+
+    if (still) return finish();
+
+    scene.classList.add("is-opening");
+    const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+
+    at(1550, () => letter.classList.add("is-clear"));   // now in front of the envelope
+    at(1700, () => envelope.classList.add("is-spent")); // the envelope recedes
+    at(3620, arrive);                                   // the words settle in
+    at(3700, () => letter.classList.add("is-spent"));
+    at(4120, () => { scene.classList.add("is-gone"); state = "open"; });
+    at(4600, () => scene.remove());
+  });
+
+  /* fonts change the card's height, so measure once they land */
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(measure);
+  measure();
+  addEventListener("resize", () => { if (state === "sealed") measure(); });
+})();
+</script>
+</body>
+</html>
