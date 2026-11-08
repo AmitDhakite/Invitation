@@ -7,12 +7,6 @@ Plain HTML, no build step, hosted on GitHub Pages.
 
 Once GitHub Pages is on (Settings → Pages → Deploy from a branch → `main`, folder `/ (root)`):
 
-| Who        | Page                    | Address                                                   |
-|------------|-------------------------|-----------------------------------------------------------|
-| Guests     | Invitation, English     | https://amitdhakite.github.io/Invitation/                 |
-| Guests     | Invitation, Hindi       | https://amitdhakite.github.io/Invitation/hi.html          |
-| Organizers | Organizers' page        | https://amitdhakite.github.io/Invitation/organizers/      |
-
 Personal links add the guest's name: `…/Invitation/?to=Priya%20Sharma` (English) or
 `…/Invitation/hi.html?to=Priya%20Sharma` (Hindi). Make them for the whole list on the
 organizers' page → **Guest links**.
