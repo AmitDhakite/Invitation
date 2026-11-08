@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#E6E3DC">
+<meta name="robots" content="noindex">
+<title>Guest links</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23C9A96B'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%23FFF7E4' stroke-opacity='.5'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..500&family=Pinyon+Script&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+
+<style>
+/* ─────────────────────────────────────────────
+   tokens — the invitation's palette, so this page sits beside it
+   ───────────────────────────────────────────── */
+:root{
+  --wall:       #E6E3DC;
+  --tile:       #FFFDF9;
+  --env-deep:   #121A2C;
+  --ink:        #1F2A44;
+  --accent:     #B8975A;
+  --ink-soft:   color-mix(in srgb, var(--ink) 70%, #fff);
+  --hair:       color-mix(in srgb, var(--ink) 14%, transparent);
+
+  --serif: "Bodoni Moda", "Tiro Devanagari Hindi", Didot, "Times New Roman", serif;
+  --script: "Pinyon Script", cursive;
+}
+
+*,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+
+html{ -webkit-text-size-adjust:100%; background:var(--wall); }
+
+body{
+  min-height:100svh;
+  font-family:var(--serif);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  padding:calc(clamp(1.6rem,6vw,3.4rem) + env(safe-area-inset-top))
+          calc(clamp(1rem,4vw,2.6rem) + env(safe-area-inset-right))
+          calc(clamp(2rem,6vw,3.4rem) + env(safe-area-inset-bottom))
+          calc(clamp(1rem,4vw,2.6rem) + env(safe-area-inset-left));
+}
+
+:focus-visible{ outline:2px solid var(--ink); outline-offset:3px; border-radius:2px; }
+
+.page{ max-width:40rem; margin:0 auto; display:grid; gap:clamp(1.1rem,3.5vw,1.6rem); }
+
+/* back to the organizers' page */
+.back{ max-width:76rem; margin:0 auto clamp(.6rem,2vw,1rem); }
+.back a{
+  font-size:.7rem; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--ink-soft); text-decoration:none;
+  display:inline-block; padding:.5rem 0;          /* a fair thumb target */
+}
+.back a:hover{ color:var(--ink); }
+.top{ text-align:center; padding-bottom:.4rem; }
+.top h1{ font-family:var(--script); font-weight:400; font-size:clamp(2.8rem,12vw,3.6rem); line-height:1; }
+.top p{
+  padding-top:.7rem;
+  font-size:.72rem; letter-spacing:.22em; text-transform:uppercase;
+  color:var(--ink-soft);
+}
+
+.panel{
+  background:var(--tile);
+  border-radius:6px;
+  padding:clamp(1.1rem,4vw,1.6rem);
+  box-shadow:0 1px 0 var(--hair), 0 14px 30px -20px rgba(30,30,40,.45);
+  display:grid; gap:1rem;
+}
+
+label{ display:grid; gap:.45rem; }
+.label{ font-size:.7rem; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-soft); }
+.help{ font-size:.82rem; font-style:italic; color:var(--ink-soft); line-height:1.5; }
+
+input, textarea{
+  font:inherit; font-size:1rem;              /* 16px: iPhone won't zoom in on focus */
+  color:var(--ink);
+  width:100%;
+  padding:.75rem .85rem;
+  border:1px solid color-mix(in srgb, var(--ink) 22%, transparent); border-radius:4px;
+  background:#fff;
+  transition:border-color .2s ease, box-shadow .2s ease;
+}
+input:focus, textarea:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+input[aria-invalid="true"]{ border-color:#A3433A; }
+textarea{ min-height:9.5rem; resize:vertical; line-height:1.6; }
+.error{ font-size:.82rem; color:#A3433A; }
+.error:empty{ display:none; }
+
+.btn{
+  font-family:var(--serif);
+  font-size:.72rem; letter-spacing:.15em; text-transform:uppercase;
+  min-height:44px;                /* a fair thumb target */
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:.6em 1.5em;
+  border:1px solid var(--ink); border-radius:999px;
+  background:var(--ink); color:#FBF7EE;
+  cursor:pointer;
+  touch-action:manipulation; -webkit-tap-highlight-color:transparent;
+  transition:transform .2s cubic-bezier(.16,1,.3,1), background .25s ease, border-color .25s ease, color .25s ease;
+  white-space:nowrap;
+}
+.btn:active{ transform:scale(.97); background:var(--env-deep); border-color:var(--env-deep); }
+.btn-quiet{ background:none; color:var(--ink); border-color:var(--accent); }
+.btn-quiet:active{ background:color-mix(in srgb, var(--accent) 16%, transparent); }
+.btn.is-done{ background:var(--accent); border-color:var(--accent); color:#fff; }
+.btn:disabled{ opacity:.45; cursor:default; }
+@media (hover:hover){
+  .btn:not(:disabled):hover{ background:var(--env-deep); border-color:var(--env-deep); color:#FBF7EE; }
+  .btn-quiet:not(:disabled):hover{ background:color-mix(in srgb, var(--accent) 12%, transparent); border-color:var(--accent); color:var(--ink); }
+}
+
+.out-head{ display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+.count{ font-size:.7rem; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-soft); }
+
+.links{ list-style:none; display:grid; }
+.link{
+  display:grid; grid-template-columns:1fr auto; align-items:center; gap:.4rem 1rem;
+  padding:.85rem 0;
+  border-top:1px solid var(--hair);
+}
+.link:first-child{ border-top:0; padding-top:.2rem; }
+.link-name{ font-family:var(--script); font-size:1.7rem; line-height:1.15; overflow-wrap:anywhere; }
+.link-url{
+  grid-column:1 / -1;
+  font-size:.8rem; line-height:1.5;
+  color:var(--ink-soft);
+  overflow-wrap:anywhere;
+  text-decoration:underline; text-decoration-color:color-mix(in srgb, var(--accent) 60%, transparent);
+  text-underline-offset:.3em;
+}
+/* English / हिन्दी / Both: one segmented control */
+.langs{ border:0; display:grid; gap:.45rem; min-width:0; }
+.seg{ display:flex; border:1px solid color-mix(in srgb, var(--ink) 22%, transparent); border-radius:999px; padding:3px; background:#fff; }
+.seg label{ flex:1; display:block; }
+.seg input{ position:absolute; opacity:0; pointer-events:none; }
+.seg span{
+  display:flex; align-items:center; justify-content:center;
+  min-height:40px; border-radius:999px;
+  font-size:.9rem; color:var(--ink-soft); cursor:pointer;
+  transition:background .2s ease, color .2s ease;
+}
+.seg input:checked + span{ background:var(--ink); color:#FBF7EE; }
+.seg input:focus-visible + span{ outline:2px solid var(--accent); outline-offset:2px; }
+.help code{ font-style:normal; font-size:.78rem; color:var(--ink); }
+.link-lang{
+  justify-self:start;
+  font-size:.62rem; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink-soft); border:1px solid var(--hair); border-radius:999px; padding:.15em .6em;
+}
+.link-lang:lang(hi){ letter-spacing:0; font-size:.78rem; }
+.link-note{ grid-column:1 / -1; font-size:.76rem; font-style:italic; color:#8A5A2B; }
+.empty{ font-size:.9rem; font-style:italic; color:var(--ink-soft); text-align:center; padding:.6rem 0; }
+
+.sr{ position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+</style>
+</head>
+
+<body>
+<main class="page">
+  <nav class="back"><a href="./">← Organizers</a></nav>
+  <header class="top">
+    <h1>Guest links</h1>
+    <p>One personal invitation for each guest</p>
+  </header>
+
+  <section class="panel">
+    <label>
+      <span class="label">Invitation address</span>
+      <input id="base" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false"
+             placeholder="https://yourname.github.io/invite/">
+      <span class="help">Where the invitation lives, for example your GitHub Pages address. Filled in for you: the invitation is one folder up from this page.</span>
+      <span class="error" id="base-error" aria-live="polite"></span>
+    </label>
+
+    <label>
+      <span class="label">Guest names, one per line</span>
+      <textarea id="names" autocapitalize="words" spellcheck="false" placeholder="Priya Sharma&#10;Rahul &amp; Neha&#10;Zoë Müller"></textarea>
+    </label>
+
+    <fieldset class="langs">
+      <legend class="label">Language of the invitation</legend>
+      <div class="seg">
+        <label><input type="radio" name="lang" value="en" checked><span>English</span></label>
+        <label><input type="radio" name="lang" value="hi"><span lang="hi">हिन्दी</span></label>
+        <label><input type="radio" name="lang" value="both"><span>Both</span></label>
+      </div>
+      <span class="help">Hindi links open the same invitation in Hindi, from <code>hi.html</code>. The couple's names and the numbers stay in English.</span>
+    </fieldset>
+  </section>
+
+  <section class="panel" aria-labelledby="out-title">
+    <div class="out-head">
+      <h2 class="count" id="out-title"><span id="count">No</span> links</h2>
+      <button class="btn" id="copy-all" type="button" disabled>Copy all</button>
+    </div>
+    <ul class="links" id="links"></ul>
+    <p class="empty" id="empty">Add a guest's name above and their link appears here.</p>
+  </section>
+
+  <p class="sr" id="status" aria-live="polite"></p>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const base = $("base"), names = $("names"), list = $("links"), copyAll = $("copy-all");
+  const KEY = "invite:links", MAX = 40;    // the invitation shows at most 40 letters of a name
+
+  // what was typed last time stays here, in this browser only
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(KEY)) || {}; } catch {}
+  // the invitation is one folder up from this page (organizers/), so that address is the best first guess;
+  // opened as a file on a computer, it falls back to the published site
+  const SITE = "https://amitdhakite.github.io/Invitation/";
+  base.value  = saved.base || (location.protocol.startsWith("http") ? new URL("../", location.href).href : SITE);
+  names.value = saved.names || "";
+  const radios = [...document.querySelectorAll('input[name="lang"]')];
+  radios.forEach(r => r.checked = r.value === (saved.lang || "en"));
+  const chosen = () => radios.find(r => r.checked).value;
+
+  // the two invitations, side by side in the same folder: index.html, and hi.html for Hindi
+  const LANGS = { en:{ label:"English", page:null }, hi:{ label:"हिन्दी", page:"hi.html" } };
+
+  // the address as the invitation will be reached: no old ?to=, and a folder ends in a slash
+  const invitationUrl = () => {
+    let u;
+    try { u = new URL(base.value.trim()); } catch { return null; }
+    if (!/^https?:$/.test(u.protocol)) return null;
+    if (!/\/$|\.html?$/i.test(u.pathname)) u.pathname += "/";
+    u.search = ""; u.hash = "";
+    return u.href;
+  };
+
+  const guests = () => {
+    const seen = new Set();
+    return names.value.split(/\r?\n/)
+      .map(n => n.normalize("NFC").replace(/\s+/g, " ").trim())
+      .filter(n => n && !seen.has(n.toLowerCase()) && seen.add(n.toLowerCase()));
+  };
+
+  // English: the address as given. Hindi: hi.html beside it (new URL resolves it against the folder)
+  const linkFor = (url, name, lang) => {
+    const page = LANGS[lang].page ? new URL(LANGS[lang].page, url).href : url;
+    return `${page}?to=${encodeURIComponent(name)}`;
+  };
+
+  /* ── copying: the clipboard API where the page is secure, the old way where it isn't ── */
+  const copy = async text => {
+    try { await navigator.clipboard.writeText(text); return true; } catch {}
+    const area = Object.assign(document.createElement("textarea"), { value:text, readOnly:true });
+    area.style.cssText = "position:fixed;opacity:0;pointer-events:none";
+    document.body.append(area);
+    area.select();
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch {}
+    area.remove();
+    return ok;
+  };
+
+  const flash = (btn, ok, label) => {
+    btn.textContent = ok ? "Copied" : "Couldn't copy";
+    btn.classList.toggle("is-done", ok);
+    $("status").textContent = ok ? `${label} copied` : "Copying didn't work: press and hold the link to copy it";
+    clearTimeout(btn._t);
+    btn._t = setTimeout(() => { btn.textContent = btn.dataset.label; btn.classList.remove("is-done"); }, 1600);
+  };
+
+  /* ── draw the list ───────────────────────────────────────── */
+  const render = () => {
+    const lang = chosen();
+    try { localStorage.setItem(KEY, JSON.stringify({ base:base.value, names:names.value, lang })); } catch {}
+
+    const url = invitationUrl(), people = guests();
+    const bad = base.value.trim() && !url;
+    base.setAttribute("aria-invalid", bad);
+    $("base-error").textContent = bad ? "That doesn't look like a web address. It should start with https://" : "";
+
+    const langs = lang === "both" ? ["en", "hi"] : [lang];
+    const rows = url ? people.flatMap(name => langs.map(l => ({ name, lang:l, link:linkFor(url, name, l) }))) : [];
+    list.replaceChildren(...rows.map(({ name, lang:l, link }) => {
+      const li = document.createElement("li");
+      li.className = "link";
+      const who = Object.assign(document.createElement("span"), { className:"link-name", textContent:name });
+      const btn = Object.assign(document.createElement("button"), { className:"btn btn-quiet", type:"button", textContent:"Copy" });
+      btn.dataset.label = "Copy";
+      btn.setAttribute("aria-label", `Copy the ${l === "hi" ? "Hindi" : "English"} link for ${name}`);
+      btn.addEventListener("click", async () => flash(btn, await copy(link), `${name}'s link`));
+      const a = Object.assign(document.createElement("a"), { className:"link-url", href:link, target:"_blank", rel:"noopener", textContent:link });
+      li.append(who, btn);
+      if (langs.length > 1) li.append(Object.assign(document.createElement("span"), { className:"link-lang", lang:l, textContent:LANGS[l].label }));
+      li.append(a);
+      if ([...name].length > MAX)
+        li.append(Object.assign(document.createElement("span"), { className:"link-note", textContent:`Long name: the invitation will show the first ${MAX} letters.` }));
+      return li;
+    }));
+
+    $("count").textContent = rows.length || "No";
+    $("out-title").lastChild.textContent = rows.length === 1 ? " link" : " links";
+    $("empty").hidden = rows.length > 0;
+    $("empty").textContent = people.length && !url
+      ? "Add the invitation address above and the links appear here."
+      : "Add a guest's name above and their link appears here.";
+    copyAll.disabled = !rows.length;
+    copyAll._rows = rows;
+  };
+
+  // one guest a line, name then link: ready to paste into a note or a spreadsheet
+  copyAll.dataset.label = "Copy all";
+  copyAll.addEventListener("click", async () => {
+    const both = new Set(copyAll._rows.map(r => r.lang)).size > 1;
+    const text = copyAll._rows.map(r => both ? `${r.name}\t${LANGS[r.lang].label}\t${r.link}` : `${r.name}\t${r.link}`).join("\n");
+    flash(copyAll, await copy(text), `${copyAll._rows.length} links`);
+  });
+
+  base.addEventListener("input", render);
+  names.addEventListener("input", render);
+  radios.forEach(r => r.addEventListener("change", render));
+  render();
+})();
+</script>
+</body>
+</html>

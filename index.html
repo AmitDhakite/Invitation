@@ -6,26 +6,30 @@
 <meta name="theme-color" content="#E6E3DC">
 <title>You're invited</title>
 <meta name="description" content="A sealed invitation. Tap to open.">
+<!-- guests arrive by their own link: keep a private celebration out of search results -->
+<meta name="robots" content="noindex, nofollow">
 
 <!-- what WhatsApp / iMessage show when the link is shared — these can't come from
      INVITE below, because link previews don't run JavaScript. Keep them in step by hand.
      For a picture in the preview, add: <meta property="og:image" content="https://…/preview.jpg"> -->
 <meta property="og:type" content="website">
+<meta property="og:locale" content="en_IN">
 <meta property="og:title" content="You're invited — Ankita &amp; Akash's wedding">
 <meta property="og:description" content="A sealed invitation. Tap to open.">
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23C9A96B'/%3E%3Ccircle cx='16' cy='16' r='10' fill='none' stroke='%23FFF7E4' stroke-opacity='.5'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..500&family=Pinyon+Script&display=swap" rel="stylesheet">
+<!-- Amita and Tiro Devanagari Hindi carry the Hindi invitation; on the English one they are never downloaded -->
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..500&family=Pinyon+Script&family=Amita&family=Tiro+Devanagari+Hindi:ital@0;1&display=swap" rel="stylesheet">
 
 <style>
 /* ─────────────────────────────────────────────
    tokens
    ───────────────────────────────────────────── */
 :root{
-  /* ── the palette: midnight navy with champagne gold (no. 01 in palettes.html) ──
-     to change palette, copy another card's values from palettes.html into these twelve lines;
+  /* ── the palette: midnight navy with champagne gold (no. 01 in drafts/palettes.html, kept on the computer only) ──
+     to change palette, copy another card's values from drafts/palettes.html into these twelve lines;
      every other colour on the page is mixed from them.
      (the theme-color and the favicon in <head> can't read CSS: change those two by hand) */
   --wall:       #E6E3DC;
@@ -46,8 +50,9 @@
   --frame:      color-mix(in srgb, var(--accent) 45%, transparent);
   --crease:     rgba(150,140,115,.34);
 
-  --serif: "Bodoni Moda", Didot, "Times New Roman", serif;
-  --script: "Pinyon Script", cursive;
+  /* the Devanagari faces come second: they only ever draw the Hindi letters */
+  --serif: "Bodoni Moda", "Tiro Devanagari Hindi", Didot, "Times New Roman", serif;
+  --script: "Pinyon Script", "Amita", cursive;
 
   --ease-out:  cubic-bezier(.16,1,.3,1);
   --ease-move: cubic-bezier(.5,0,.2,1);
@@ -198,7 +203,7 @@ body.is-sealed{ overflow:hidden; }
     radial-gradient(58% 58% at 50% 50%, rgba(0,0,0,.16), rgba(0,0,0,0) 74%);
 }
 .env-flap-shadow{
-  clip-path:polygon(0 0, 100% 0, 50% 62%);
+  clip-path:polygon(0 0, 100% 0, 50% 65.5%);
   background:linear-gradient(180deg, rgba(0,0,0,0) 72%, rgba(0,0,0,.24) 100%);
   transition:opacity .4s ease;
 }
@@ -212,11 +217,27 @@ body.is-sealed{ overflow:hidden; }
 }
 .flap-face{
   position:absolute; inset:0;
-  clip-path:polygon(0 0, 100% 0, 50% 58.5%);
+  clip-path:polygon(0 0, 100% 0, 50% 62%);
   -webkit-backface-visibility:hidden; backface-visibility:hidden;
   border-radius:3px 3px 0 0;
 }
-.flap-out{ background:var(--grain) 0 0/180px, linear-gradient(172deg,color-mix(in srgb,var(--env-light) 80%,var(--env)) 0%,color-mix(in srgb,var(--env-light) 30%,var(--env)) 62%,var(--env) 100%); }
+/* closed, the gold liner shows as a fine edge along the V of the flap, catching the light
+   where it widens towards the point. it is drawn on the flap's own outer face, so it swings with it */
+.flap-out{
+  background:
+    var(--grain) 0 0/180px,
+    linear-gradient(100deg,
+      color-mix(in srgb,var(--liner) 70%,var(--seal-deep)) 0%,
+      color-mix(in srgb,var(--liner) 60%,#fff) 32%,
+      var(--liner) 50%,
+      color-mix(in srgb,var(--liner) 60%,#fff) 68%,
+      color-mix(in srgb,var(--liner) 70%,var(--seal-deep)) 100%);
+}
+.flap-out::before{
+  content:""; position:absolute; inset:0;
+  clip-path:polygon(0 0, 100% 0, 50% 58.5%);
+  background:var(--grain) 0 0/180px, linear-gradient(172deg,color-mix(in srgb,var(--env-light) 80%,var(--env)) 0%,color-mix(in srgb,var(--env-light) 30%,var(--env)) 62%,var(--env) 100%);
+}
 .flap-in{
   transform:rotateY(180deg);
   background:var(--grain) 0 0/180px, linear-gradient(8deg,var(--liner),color-mix(in srgb,var(--liner) 86%,var(--env-deep)) 70%,color-mix(in srgb,var(--liner) 74%,var(--env-deep)));
@@ -232,52 +253,39 @@ body.is-sealed{ overflow:hidden; }
 .seal{
   position:absolute; z-index:6;
   top:50%; left:50%;
-  width:clamp(60px,15%,90px);
+  width:clamp(72px,19%,104px);
   aspect-ratio:1;
   transform:translate(-50%,-50%);
-  container-type:inline-size;
   pointer-events:none;
 }
+/* the wax breaks along one jagged line, which both halves share. until the tap the left half is
+   the whole seal, so no hairline shows where they meet. the outer corners reach past the box,
+   so the drips and the shadow are never cut off */
 .seal-half{
   position:absolute; inset:0;
   transition:transform .35s var(--ease-out), opacity .7s ease;
 }
-.seal-half.l{ clip-path:polygon(0 0, 53% 0, 46% 100%, 0 100%); }
-.seal-half.r{ clip-path:polygon(53% 0, 100% 0, 100% 100%, 46% 100%); }
+.is-opening .seal-half.l{ clip-path:polygon(-30% -30%, 55% -30%, 55% 6%, 50.5% 18%, 56% 30%, 49.5% 42%, 54% 54%, 46.5% 66%, 52% 79%, 47.5% 92%, 49% 130%, -30% 130%); }
+.seal-half.r{ clip-path:polygon(55% -30%, 130% -30%, 130% 130%, 49% 130%, 47.5% 92%, 52% 79%, 46.5% 66%, 54% 54%, 49.5% 42%, 56% 30%, 50.5% 18%, 55% 6%); }
 /* pressing the wax: it gives a little under the thumb */
 .envelope:active .seal-half{ transform:scale(.94); transition-duration:.12s; }
 
-.seal-face{
-  position:absolute; inset:0;
-  /* poured wax, not a bead: an uneven edge and a matte surface */
-  border-radius:49% 51% 46% 54% / 53% 47% 53% 47%;
-  background:
-    radial-gradient(84% 84% at 34% 28%, rgba(255,255,255,.28) 0%, rgba(255,255,255,0) 44%),
-    radial-gradient(112% 112% at 50% 42%, var(--seal-light) 0%, var(--seal) 52%, var(--seal-deep) 100%);
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--seal-deep) 45%, transparent) inset,
-    0 -5px 10px color-mix(in srgb, var(--seal-deep) 50%, transparent) inset,
-    0 4px 10px rgba(30,26,20,.38);
-  display:grid; place-items:center;
-  font-family:var(--script);
-  font-size:1.9rem;
-  font-size:50cqw;
-  line-height:1;
-  color:var(--seal-ink);
-  text-shadow:0 1px 1px color-mix(in srgb, var(--seal-deep) 80%, transparent);
-  padding-bottom:.1em;
+/* poured wax, drawn in the sprite at the top of <body>: an uneven pour with drips, a thicker side wall,
+   the rim the stamp squeezed up, and the emblem pressed into it */
+.seal-art{
+  position:absolute; inset:0; width:100%; height:100%;
+  overflow:visible;
+  filter:drop-shadow(0 3px 3px rgba(20,16,10,.42));
 }
-.seal.is-long .seal-face{ font-size:1.1rem; font-size:28cqw; }   /* a monogram of more than one letter, like A&A */
-/* the pressed rim of the stamp */
-.seal-face::after{
-  content:"";
-  position:absolute; inset:13%;
-  border-radius:inherit;
-  box-shadow:0 0 0 1px color-mix(in srgb, var(--seal-deep) 45%, transparent) inset, 0 1px 0 rgba(255,255,255,.16) inset;
-}
+/* the emblem is debossed: a dark edge where the cut falls into shadow, a pale lip where it catches the light */
+.e-lip  { color:var(--seal-ink); opacity:.5; }
+.e-shade{ color:var(--seal-deep); }
+.e-face { color:color-mix(in srgb, var(--seal-deep) 50%, var(--seal)); }
+.sprite{ position:absolute; width:0; height:0; overflow:hidden; }   /* not display:none, or its gradients go missing */
+
 /* a faint ring that says "here" without saying it loudly */
 .seal-ring{
-  position:absolute; inset:-1px;
+  position:absolute; inset:6%;
   border-radius:50%;
   box-shadow:0 0 0 1px color-mix(in srgb, var(--paper-tone) 70%, transparent);
   opacity:0;
@@ -521,6 +529,22 @@ body.is-sealed{ overflow:hidden; }
 @media (hover:hover){ .mute:hover{ color:var(--ink); border-color:var(--accent); } }
 .scene:not(.is-ready) ~ .mute{ visibility:hidden; }   /* arrives with the envelope */
 body:not(.is-sealed) .mute{ position:absolute; }       /* once open, it stays at the top rather than riding over the card */
+/* phone: room above the card for the toggle. always on, so the card never moves under the arriving letter */
+@media (max-width:34rem){ body{ padding-top:calc(3.6rem + env(safe-area-inset-top)); } }
+
+/* ── Hindi: Devanagari hangs from its headline, so no letter-spacing (it would break the line),
+      a little more size for the small print, and more air for the marks above and below ── */
+:lang(hi) .hint, :lang(hi) .invite-lead, :lang(hi) .rsvp-by,
+:lang(hi) .invite-map, :lang(hi) .btn{ letter-spacing:0; }
+:lang(hi) .hint, :lang(hi) .invite-lead, :lang(hi) .rsvp-by{ font-size:.95rem; line-height:1.6; }
+:lang(hi) .invite-map{ font-size:.86rem; }
+:lang(hi) .btn{ font-size:.95rem; }
+:lang(hi) .greet{ font-size:clamp(2rem,8.4vw,2.6rem); line-height:1.5; }
+:lang(hi) .invite-dear{ font-size:clamp(1.55rem,6.4vw,1.9rem); line-height:1.6; }
+:lang(hi) .invite-occasion{ font-size:clamp(1.05rem,4.2vw,1.2rem); line-height:1.7; padding-top:.3rem; }
+:lang(hi) .invite-when, :lang(hi) .invite-notes, :lang(hi) .invite-from{ line-height:1.9; }
+:lang(hi) .ink{ padding:.45em .32em; margin:-.45em -.32em; }   /* the marks above a Devanagari line reach higher */
+:lang(hi) .greet, :lang(hi) .invite-dear{ word-spacing:.14em; }   /* the script's own space is narrow beside Devanagari */
 
 /* ── motion: the entrance, the idle seal, and the quiet arrival after a skip ── */
 @media (prefers-reduced-motion:no-preference){
@@ -561,17 +585,78 @@ body:not(.is-sealed) .mute{ position:absolute; }       /* once open, it stays at
 
 <body class="is-sealed">
 
+<!-- the seal's artwork, drawn once and reused: <use href="#…"> below -->
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <defs>
+    <!-- the wax: an uneven pour, its side wall, the raised rim the stamp squeezed up, and the pressed disc -->
+    <radialGradient id="wax-body" cx=".42" cy=".38" r=".7" fx=".34" fy=".28"><stop offset="0" style="stop-color:var(--seal-light)"/><stop offset="0.5" style="stop-color:var(--seal)"/><stop offset="1" style="stop-color:var(--seal-deep)"/></radialGradient>
+    <linearGradient id="wax-side" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--seal-deep)"/><stop offset="1" style="stop-color:color-mix(in srgb, var(--seal-deep) 62%, #000)"/></linearGradient>
+    <radialGradient id="wax-edge" cx=".5" cy=".5" r=".5"><stop offset="0.78" style="stop-color:var(--seal-deep);stop-opacity:0"/><stop offset="1" style="stop-color:var(--seal-deep);stop-opacity:0.6"/></radialGradient>
+    <linearGradient id="wax-rim" x1=".15" y1=".1" x2=".85" y2=".9"><stop offset="0" style="stop-color:#fff;stop-opacity:0.6"/><stop offset="0.45" style="stop-color:#fff;stop-opacity:0"/><stop offset="0.6" style="stop-color:var(--seal-deep);stop-opacity:0"/><stop offset="1" style="stop-color:var(--seal-deep);stop-opacity:0.7"/></linearGradient>
+    <radialGradient id="wax-press" cx=".5" cy=".56" r=".56"><stop offset="0" style="stop-color:var(--seal)"/><stop offset="0.8" style="stop-color:color-mix(in srgb, var(--seal) 86%, var(--seal-deep))"/><stop offset="1" style="stop-color:color-mix(in srgb, var(--seal) 55%, var(--seal-deep))"/></radialGradient>
+    <linearGradient id="wax-press-edge" x1=".15" y1=".1" x2=".85" y2=".9"><stop offset="0" style="stop-color:var(--seal-deep)"/><stop offset="0.5" style="stop-color:var(--seal-deep);stop-opacity:0"/><stop offset="1" style="stop-color:#fff;stop-opacity:0.55"/></linearGradient>
+    <radialGradient id="wax-shine"><stop offset="0" style="stop-color:#fff;stop-opacity:0.55"/><stop offset="1" style="stop-color:#fff;stop-opacity:0"/></radialGradient>
+
+    <g id="seal-wax">
+      <path d="M97.49 50C97.67 51.77 97.71 53.57 97.66 55.37C97.62 57.17 97.56 59.01 97.25 60.78C96.93 62.56 96.54 64.39 95.77 66.02C95.01 67.64 93.78 69.13 92.64 70.54C91.51 71.95 90.12 73.16 88.94 74.47C87.77 75.78 86.69 77.07 85.58 78.38C84.48 79.68 83.42 80.99 82.31 82.31C81.2 83.63 80.01 84.81 78.94 86.29C77.86 87.76 77.13 89.83 75.87 91.17C74.6 92.5 73.08 93.84 71.33 94.3C69.58 94.75 67.24 93.94 65.36 93.9C63.48 93.85 61.78 93.98 60.05 94.04C58.32 94.1 56.66 94.22 54.99 94.27C53.31 94.32 51.66 94.32 50 94.33C48.34 94.33 46.69 94.34 45.01 94.31C43.33 94.27 41.64 94.24 39.93 94.1C38.23 93.96 36.53 93.72 34.79 93.48C33.04 93.24 31.44 92.71 29.46 92.66C27.47 92.6 25.05 93.25 22.88 93.16C20.72 93.06 17.87 93.32 16.46 92.06C15.04 90.81 15.01 87.67 14.39 85.61C13.78 83.55 13.47 81.46 12.75 79.71C12.03 77.95 10.91 76.64 10.08 75.09C9.24 73.53 8.4 71.98 7.73 70.35C7.07 68.73 6.52 67.05 6.12 65.36C5.71 63.66 5.44 61.92 5.28 60.21C5.12 58.49 5.11 56.76 5.14 55.05C5.17 53.35 5.32 51.67 5.46 50C5.6 48.33 5.81 46.69 5.99 45.04C6.17 43.39 6.47 41.8 6.54 40.08C6.6 38.36 6.44 36.6 6.38 34.74C6.32 32.87 5.65 30.59 6.2 28.91C6.74 27.22 8.42 25.97 9.64 24.64C10.86 23.31 12.26 22.15 13.53 20.91C14.8 19.68 15.94 18.38 17.25 17.25C18.56 16.11 19.96 15.08 21.37 14.1C22.78 13.12 24.25 12.24 25.72 11.36C27.19 10.48 28.66 9.64 30.17 8.82C31.67 7.99 33.18 7.17 34.75 6.42C36.32 5.67 37.92 4.91 39.57 4.32C41.23 3.72 42.95 3.18 44.69 2.85C46.43 2.52 48.23 2.32 50 2.33C51.77 2.33 53.57 2.55 55.31 2.88C57.05 3.22 58.74 3.81 60.42 4.34C62.1 4.87 63.7 5.54 65.37 6.06C67.05 6.59 68.86 6.81 70.47 7.49C72.09 8.16 73.73 8.98 75.06 10.12C76.39 11.26 77.35 12.96 78.45 14.32C79.56 15.69 80.6 17.01 81.69 18.31C82.78 19.6 83.94 20.79 84.99 22.1C86.04 23.4 87.05 24.74 87.99 26.13C88.93 27.52 89.8 28.96 90.62 30.44C91.45 31.91 92.23 33.42 92.95 34.97C93.68 36.52 94.37 38.1 94.98 39.73C95.58 41.37 96.15 43.04 96.56 44.75C96.98 46.46 97.31 48.23 97.49 50Z" transform="translate(1.1 2.4)" fill="url(#wax-side)"/>
+      <circle cx="14.54" cy="95.39" r="2.3" transform="translate(.5 1.1)" fill="url(#wax-side)"/>
+      <path d="M97.49 50C97.67 51.77 97.71 53.57 97.66 55.37C97.62 57.17 97.56 59.01 97.25 60.78C96.93 62.56 96.54 64.39 95.77 66.02C95.01 67.64 93.78 69.13 92.64 70.54C91.51 71.95 90.12 73.16 88.94 74.47C87.77 75.78 86.69 77.07 85.58 78.38C84.48 79.68 83.42 80.99 82.31 82.31C81.2 83.63 80.01 84.81 78.94 86.29C77.86 87.76 77.13 89.83 75.87 91.17C74.6 92.5 73.08 93.84 71.33 94.3C69.58 94.75 67.24 93.94 65.36 93.9C63.48 93.85 61.78 93.98 60.05 94.04C58.32 94.1 56.66 94.22 54.99 94.27C53.31 94.32 51.66 94.32 50 94.33C48.34 94.33 46.69 94.34 45.01 94.31C43.33 94.27 41.64 94.24 39.93 94.1C38.23 93.96 36.53 93.72 34.79 93.48C33.04 93.24 31.44 92.71 29.46 92.66C27.47 92.6 25.05 93.25 22.88 93.16C20.72 93.06 17.87 93.32 16.46 92.06C15.04 90.81 15.01 87.67 14.39 85.61C13.78 83.55 13.47 81.46 12.75 79.71C12.03 77.95 10.91 76.64 10.08 75.09C9.24 73.53 8.4 71.98 7.73 70.35C7.07 68.73 6.52 67.05 6.12 65.36C5.71 63.66 5.44 61.92 5.28 60.21C5.12 58.49 5.11 56.76 5.14 55.05C5.17 53.35 5.32 51.67 5.46 50C5.6 48.33 5.81 46.69 5.99 45.04C6.17 43.39 6.47 41.8 6.54 40.08C6.6 38.36 6.44 36.6 6.38 34.74C6.32 32.87 5.65 30.59 6.2 28.91C6.74 27.22 8.42 25.97 9.64 24.64C10.86 23.31 12.26 22.15 13.53 20.91C14.8 19.68 15.94 18.38 17.25 17.25C18.56 16.11 19.96 15.08 21.37 14.1C22.78 13.12 24.25 12.24 25.72 11.36C27.19 10.48 28.66 9.64 30.17 8.82C31.67 7.99 33.18 7.17 34.75 6.42C36.32 5.67 37.92 4.91 39.57 4.32C41.23 3.72 42.95 3.18 44.69 2.85C46.43 2.52 48.23 2.32 50 2.33C51.77 2.33 53.57 2.55 55.31 2.88C57.05 3.22 58.74 3.81 60.42 4.34C62.1 4.87 63.7 5.54 65.37 6.06C67.05 6.59 68.86 6.81 70.47 7.49C72.09 8.16 73.73 8.98 75.06 10.12C76.39 11.26 77.35 12.96 78.45 14.32C79.56 15.69 80.6 17.01 81.69 18.31C82.78 19.6 83.94 20.79 84.99 22.1C86.04 23.4 87.05 24.74 87.99 26.13C88.93 27.52 89.8 28.96 90.62 30.44C91.45 31.91 92.23 33.42 92.95 34.97C93.68 36.52 94.37 38.1 94.98 39.73C95.58 41.37 96.15 43.04 96.56 44.75C96.98 46.46 97.31 48.23 97.49 50Z" fill="url(#wax-body)"/>
+      <circle cx="14.54" cy="95.39" r="2.3" fill="url(#wax-body)"/>
+      <path d="M97.49 50C97.67 51.77 97.71 53.57 97.66 55.37C97.62 57.17 97.56 59.01 97.25 60.78C96.93 62.56 96.54 64.39 95.77 66.02C95.01 67.64 93.78 69.13 92.64 70.54C91.51 71.95 90.12 73.16 88.94 74.47C87.77 75.78 86.69 77.07 85.58 78.38C84.48 79.68 83.42 80.99 82.31 82.31C81.2 83.63 80.01 84.81 78.94 86.29C77.86 87.76 77.13 89.83 75.87 91.17C74.6 92.5 73.08 93.84 71.33 94.3C69.58 94.75 67.24 93.94 65.36 93.9C63.48 93.85 61.78 93.98 60.05 94.04C58.32 94.1 56.66 94.22 54.99 94.27C53.31 94.32 51.66 94.32 50 94.33C48.34 94.33 46.69 94.34 45.01 94.31C43.33 94.27 41.64 94.24 39.93 94.1C38.23 93.96 36.53 93.72 34.79 93.48C33.04 93.24 31.44 92.71 29.46 92.66C27.47 92.6 25.05 93.25 22.88 93.16C20.72 93.06 17.87 93.32 16.46 92.06C15.04 90.81 15.01 87.67 14.39 85.61C13.78 83.55 13.47 81.46 12.75 79.71C12.03 77.95 10.91 76.64 10.08 75.09C9.24 73.53 8.4 71.98 7.73 70.35C7.07 68.73 6.52 67.05 6.12 65.36C5.71 63.66 5.44 61.92 5.28 60.21C5.12 58.49 5.11 56.76 5.14 55.05C5.17 53.35 5.32 51.67 5.46 50C5.6 48.33 5.81 46.69 5.99 45.04C6.17 43.39 6.47 41.8 6.54 40.08C6.6 38.36 6.44 36.6 6.38 34.74C6.32 32.87 5.65 30.59 6.2 28.91C6.74 27.22 8.42 25.97 9.64 24.64C10.86 23.31 12.26 22.15 13.53 20.91C14.8 19.68 15.94 18.38 17.25 17.25C18.56 16.11 19.96 15.08 21.37 14.1C22.78 13.12 24.25 12.24 25.72 11.36C27.19 10.48 28.66 9.64 30.17 8.82C31.67 7.99 33.18 7.17 34.75 6.42C36.32 5.67 37.92 4.91 39.57 4.32C41.23 3.72 42.95 3.18 44.69 2.85C46.43 2.52 48.23 2.32 50 2.33C51.77 2.33 53.57 2.55 55.31 2.88C57.05 3.22 58.74 3.81 60.42 4.34C62.1 4.87 63.7 5.54 65.37 6.06C67.05 6.59 68.86 6.81 70.47 7.49C72.09 8.16 73.73 8.98 75.06 10.12C76.39 11.26 77.35 12.96 78.45 14.32C79.56 15.69 80.6 17.01 81.69 18.31C82.78 19.6 83.94 20.79 84.99 22.1C86.04 23.4 87.05 24.74 87.99 26.13C88.93 27.52 89.8 28.96 90.62 30.44C91.45 31.91 92.23 33.42 92.95 34.97C93.68 36.52 94.37 38.1 94.98 39.73C95.58 41.37 96.15 43.04 96.56 44.75C96.98 46.46 97.31 48.23 97.49 50Z" fill="url(#wax-edge)"/>
+      <circle cx="50" cy="50" r="38.6" fill="none" stroke="url(#wax-rim)" stroke-width="5.2"/>
+      <circle cx="50" cy="50" r="36" fill="url(#wax-press)"/>
+      <circle cx="50" cy="50" r="35.6" fill="none" stroke="url(#wax-press-edge)" stroke-width="1.5"/>
+      <ellipse cx="31" cy="24" rx="17" ry="7.5" transform="rotate(-34 31 24)" fill="url(#wax-shine)"/>
+    </g>
+
+    <!-- two As, woven: the right A's thin leg passes under the left A's thick leg, then over its crossbar -->
+    <path id="aa-R1" d="M43.4 19 47.4 19 60.4 59 54 59Z"/><path id="aa-L1" d="M43.4 19 45.2 23.5 33.4 59 30.8 59Z"/><path id="aa-B1" d="M37.99 44 50.42 44 51.09 46.5 37.15 46.5Z"/>
+    <path id="aa-R2" d="M53.4 25 57.4 25 70.4 65 64 65Z"/><path id="aa-L2" d="M53.4 25 55.2 29.5 43.4 65 40.8 65Z"/><path id="aa-B2" d="M47.99 50 60.42 50 61.09 52.5 47.15 52.5Z"/>
+    <clipPath id="aa-w1"><rect x="44" y="31" width="14" height="12.5"/></clipPath>
+    <clipPath id="aa-w2"><rect x="43" y="42" width="10" height="7"/></clipPath>
+    <clipPath id="aa-w3"><rect x="49" y="48.5" width="12" height="5.5"/></clipPath>
+    <mask id="aa-m1" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"/><use href="#aa-R1" clip-path="url(#aa-w1)" fill="#000" stroke="#000" stroke-width="2.6" stroke-linejoin="round"/></mask>
+    <mask id="aa-m2" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"/><use href="#aa-L2" clip-path="url(#aa-w2)" fill="#000" stroke="#000" stroke-width="2.6" stroke-linejoin="round"/></mask>
+    <mask id="aa-m3" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"/><use href="#aa-B2" clip-path="url(#aa-w3)" fill="#000" stroke="#000" stroke-width="2.6" stroke-linejoin="round"/></mask>
+    <g id="aa" fill="currentColor">
+      <use href="#aa-L1"/><use href="#aa-B1" mask="url(#aa-m2)"/><use href="#aa-R1" mask="url(#aa-m3)"/>
+      <use href="#aa-L2" mask="url(#aa-m1)"/><use href="#aa-B2"/><use href="#aa-R2"/>
+      <path d="M27.4 58 36.4 58 36.4 60 27.4 60ZM51.6 58 62 58 62 60 51.6 60ZM37.4 64 46.4 64 46.4 66 37.4 66ZM61.6 64 72 64 72 66 61.6 66Z"/>
+    </g>
+
+    <!-- two wedding rings, linked: each passes over the other once -->
+    <circle id="ring-l" cx="45.4" cy="77" r="6.3"/><circle id="ring-r" cx="54.6" cy="77" r="6.3"/>
+    <clipPath id="ring-top"><rect x="46" y="69" width="8" height="6.5"/></clipPath>
+    <clipPath id="ring-bot"><rect x="46" y="78.5" width="8" height="6.5"/></clipPath>
+    <mask id="ring-m1" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"/><use href="#ring-r" clip-path="url(#ring-bot)" fill="none" stroke="#000" stroke-width="4.6"/></mask>
+    <mask id="ring-m2" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"/><use href="#ring-l" clip-path="url(#ring-top)" fill="none" stroke="#000" stroke-width="4.6"/></mask>
+    <g id="rings" fill="none" stroke="currentColor" stroke-width="2.1">
+      <use href="#ring-l" mask="url(#ring-m1)"/><use href="#ring-r" mask="url(#ring-m2)"/>
+    </g>
+
+    <!-- the emblem: the As and the rings inside a thin ring, in a 0–100 square -->
+    <g id="emblem-aa">
+      <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="2.2"/>
+      <use href="#aa"/><use href="#rings"/>
+    </g>
+  </defs>
+</svg>
+
 <!-- ════════════════════════════════════════════════════════
      EDIT EVERYTHING HERE. Nothing else needs touching.
 
      Personal links: add ?to=Priya%20Sharma to the address and the envelope
      reads "For Priya Sharma", the card opens "Dear Priya Sharma," and the
-     name goes into the reply. links.html makes these links for a whole list.
+     name goes into the reply. organizers/links.html makes these links for a whole list.
+
+     Hindi: the same invitation reads in Hindi at hi.html (or with ?lang=hi).
+     Its words are in INVITE_HI below; anything not there comes from INVITE.
+     In the words, {name}, {date} and {title} are filled in for you.
      ════════════════════════════════════════════════════════ -->
 <script>
 const INVITE = {
   greeting: "You're invited",               // above the envelope, when the link has no ?to=
-  monogram: "A&A",                          // pressed into the wax
+  monogram: "A&A",                          // on the card and the folded letter (the seal's emblem is drawn: #emblem-aa)
   lead:     "Together with their families",
   names:    ["Ankita", "Akash"],            // one name, or two
   occasion: "invite you to celebrate their wedding",
@@ -598,6 +683,59 @@ const INVITE = {
     timezone: "Asia/Kolkata",               // so guests in other time zones get the right hour
     title:    "Ankita & Akash's wedding",
     where:    "The Glasshouse, 42 Rosewood Lane, Bengaluru 560001"
+  },
+
+  // the small print around it all
+  words: {
+    forName:  "For {name}",                 // above the envelope, on a personal link
+    dear:     "Dear {name},",               // the first line of the card, on a personal link
+    open:     "Tap the seal to open",
+    openClick:"Click the seal to open",     // on a computer
+    openLabel:"Open your invitation",       // read out by screen readers
+    replyBy:  "Kindly reply by {date}",
+    map:      "View on map",
+    reply:    "Reply to this invitation",
+    addCal:   "Add to calendar",
+    mute:     "Mute sound",
+    title:    "you're invited",             // the browser tab, after the names
+    mailSubject: "RSVP — {title}",
+    mailBody: "I'd love to come.\n\nName: {name}\nGuests:\n",
+    whatsapp: "Hello! I'd love to come to {title}."
+  }
+};
+
+// the Hindi invitation: only what reads differently. names and numbers stay as they are above
+const INVITE_HI = {
+  greeting: "सप्रेम निमंत्रण",
+  lead:     "परिवारों के आशीर्वाद सहित",
+  occasion: "के शुभ विवाह में आप सादर आमंत्रित हैं",
+
+  when: [
+    "शनिवार, 14 मार्च 2026",
+    "शाम 7 बजे"
+  ],
+  notes:   ["पोशाक: गार्डन फ़ॉर्मल", "इसके बाद रात्रिभोज एवं नृत्य"],
+
+  rsvpBy:  "1 मार्च",
+  from:    "सप्रेम, Ankita & Akash",
+
+  calendar: { title: "Ankita & Akash का शुभ विवाह" },
+
+  words: {
+    forName:  "{name} के लिए",
+    dear:     "प्रिय {name},",
+    open:     "खोलने के लिए मुहर पर टैप करें",
+    openClick:"खोलने के लिए मुहर पर क्लिक करें",
+    openLabel:"अपना निमंत्रण खोलें",
+    replyBy:  "कृपया {date} तक उत्तर दें",
+    map:      "नक्शे पर देखें",
+    reply:    "निमंत्रण का उत्तर दें",
+    addCal:   "कैलेंडर में जोड़ें",
+    mute:     "ध्वनि बंद करें",
+    title:    "आपको निमंत्रण",
+    mailSubject: "उत्तर — {title}",
+    mailBody: "उपस्थिति की पुष्टि\n\nनाम: {name}\nअतिथि संख्या:\n",
+    whatsapp: "नमस्ते! {title} में उपस्थिति की पुष्टि।"
   }
 };
 </script>
@@ -624,8 +762,8 @@ const INVITE = {
       </span>
       <span class="seal" aria-hidden="true">
         <span class="seal-ring"></span>
-        <span class="seal-half l"><span class="seal-face" data-mono></span></span>
-        <span class="seal-half r"><span class="seal-face" data-mono></span></span>
+        <span class="seal-half l"><svg class="seal-art" viewBox="-8 -8 116 116"><use href="#seal-wax"/><g class="emblem" transform="translate(13.5 13.5) scale(.73)"><use class="e-lip" href="#emblem-aa" y="1.4"/><use class="e-shade" href="#emblem-aa" y="-1"/><use class="e-face" href="#emblem-aa"/></g></svg></span>
+        <span class="seal-half r"><svg class="seal-art" viewBox="-8 -8 116 116"><use href="#seal-wax"/><g class="emblem" transform="translate(13.5 13.5) scale(.73)"><use class="e-lip" href="#emblem-aa" y="1.4"/><use class="e-shade" href="#emblem-aa" y="-1"/><use class="e-face" href="#emblem-aa"/></g></svg></span>
       </span>
     </button>
     <span class="env-shadow env-recede" aria-hidden="true"></span>
@@ -713,6 +851,20 @@ const INVITE = {
     return s;
   };
   const guest = tidyName(new URLSearchParams(location.search).get("to") || "");
+
+  // the language: Hindi from hi.html (which arrives here with ?lang=hi), English otherwise
+  const hindi = new URLSearchParams(location.search).get("lang") === "hi";
+  const T = hindi
+    ? { ...INVITE, ...INVITE_HI,
+        calendar:{ ...INVITE.calendar, ...INVITE_HI.calendar },
+        words:   { ...INVITE.words,    ...INVITE_HI.words } }
+    : INVITE;
+  if (hindi) document.documentElement.lang = "hi";
+  // "Kindly reply by {date}" → "Kindly reply by 1 March"
+  const fill = (words, values) => words.replace(/\{(\w+)\}/g, (m, key) => values[key] ?? "");
+  // the same, but with a live element where {name} goes (the hand-written name)
+  const fillWith = (words, el) => words.split(/(\{name\})/).map(part => part === "{name}" ? el : part).filter(Boolean);
+
   const ua = navigator.userAgent;
   const iOS = /iP(hone|ad|od)/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
   const iOSSafari = iOS && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
@@ -793,6 +945,7 @@ const INVITE = {
   const cue = name => { buzz(BUZZ[name]); play(SOUND[name]); };
 
   const mute = $("mute");
+  mute.setAttribute("aria-label", T.words.mute);
   if (audible) {
     mute.hidden = false;
     mute.setAttribute("aria-pressed", muted);
@@ -809,43 +962,46 @@ const INVITE = {
   /* ── fill the card ───────────────────────────────────────── */
   const span = (text, className = "") => Object.assign(document.createElement("span"), { className, textContent:text });
 
-  document.querySelectorAll("[data-mono]").forEach(el => el.textContent = INVITE.monogram);
-  document.querySelector(".seal").classList.toggle("is-long", [...INVITE.monogram].length > 1);
+  // the wax carries the drawn emblem (in the sprite); the monogram text is for the card and the folded letter
+  document.querySelectorAll("[data-mono]").forEach(el => el.textContent = T.monogram);
 
   // the name is written in by hand, on the envelope and again on the card
   if (guest) {
-    $("greet").replaceChildren("For ", span(guest, "ink"));
-    $("i-dear").replaceChildren("Dear ", span(guest, "ink"), ",");
+    $("greet").replaceChildren(...fillWith(T.words.forName, span(guest, "ink")));
+    $("i-dear").replaceChildren(...fillWith(T.words.dear, span(guest, "ink")));
     $("i-dear").hidden = false;
-  } else $("greet").textContent = INVITE.greeting;
+  } else $("greet").textContent = T.greeting;
 
-  $("i-lead").textContent     = INVITE.lead;
-  $("i-name").replaceChildren(...INVITE.names.flatMap((n, i) => i ? [span("&", "invite-amp"), span(n)] : [span(n)]));
-  $("i-occasion").textContent = INVITE.occasion;
-  $("i-when").textContent     = INVITE.when.join("\n");
-  $("i-venue").textContent    = INVITE.venue;
-  $("i-address").textContent  = INVITE.address.join("\n");
-  $("i-notes").textContent    = INVITE.notes.join("\n");
-  $("i-rsvpby").textContent   = `Kindly reply by ${INVITE.rsvpBy}`;
-  $("i-from").textContent     = INVITE.from;
-  document.title              = `${INVITE.names.join(" & ")} — you're invited`;
+  $("i-lead").textContent     = T.lead;
+  $("i-name").replaceChildren(...T.names.flatMap((n, i) => i ? [span("&", "invite-amp"), span(n)] : [span(n)]));
+  $("i-occasion").textContent = T.occasion;
+  $("i-when").textContent     = T.when.join("\n");
+  $("i-venue").textContent    = T.venue;
+  $("i-address").textContent  = T.address.join("\n");
+  $("i-notes").textContent    = T.notes.join("\n");
+  $("i-rsvpby").textContent   = fill(T.words.replyBy, { date:T.rsvpBy });
+  $("i-from").textContent     = T.from;
+  $("i-map").textContent      = T.words.map;
+  $("i-rsvp").textContent     = T.words.reply;
+  $("i-cal").textContent      = T.words.addCal;
+  envelope.setAttribute("aria-label", T.words.openLabel);
+  document.title              = `${T.names.join(" & ")} — ${T.words.title}`;
   [...invite.children].forEach((el, i) => el.style.setProperty("--i", i));
 
   // most people open this on a phone, but say the right thing on a laptop
-  if (matchMedia("(hover:hover) and (pointer:fine)").matches)
-    $("hint").textContent = "Click the seal to open";
+  $("hint").textContent = matchMedia("(hover:hover) and (pointer:fine)").matches ? T.words.openClick : T.words.open;
 
   // iOS only applies :active (the seal giving under the thumb) once a touch listener exists
   addEventListener("touchstart", () => {}, { passive:true });
 
   /* ── replies, directions, calendar ───────────────────────── */
-  const cal = INVITE.calendar;
+  const cal = T.calendar;
 
-  const wa = INVITE.rsvpWhatsapp.replace(/\D/g, "");
+  const wa = T.rsvpWhatsapp.replace(/\D/g, "");
   $("i-rsvp").href = wa
-    ? `https://wa.me/${wa}?text=${enc(`Hello! I'd love to come to ${cal.title}.` + (guest ? ` — ${guest}` : ""))}`
-    : `mailto:${INVITE.rsvpEmail}?subject=${enc("RSVP — " + cal.title)}`
-      + `&body=${enc(`I'd love to come.\n\nName: ${guest}\nGuests:\n`)}`;
+    ? `https://wa.me/${wa}?text=${enc(fill(T.words.whatsapp, { title:cal.title }) + (guest ? ` — ${guest}` : ""))}`
+    : `mailto:${T.rsvpEmail}?subject=${enc(fill(T.words.mailSubject, { title:cal.title }))}`
+      + `&body=${enc(fill(T.words.mailBody, { name:guest }))}`;
 
   $("i-map").href = iOS
     ? `https://maps.apple.com/?q=${enc(cal.where)}`
@@ -998,8 +1154,11 @@ const INVITE = {
   });
 
   /* show the envelope once its type has arrived — but never wait long */
+  const faces = ['1em "Pinyon Script"', '1em "Bodoni Moda"', 'italic 1em "Bodoni Moda"'];
+  // the Hindi type: the sample text makes the browser fetch the Devanagari part of each font
+  if (hindi) faces.push('1em "Amita"', '1em "Tiro Devanagari Hindi"', 'italic 1em "Tiro Devanagari Hindi"');
   const fonts = document.fonts
-    ? Promise.all(['1em "Pinyon Script"', '1em "Bodoni Moda"', 'italic 1em "Bodoni Moda"'].map(f => document.fonts.load(f)))
+    ? Promise.all(faces.map(f => document.fonts.load(f, f.includes("Pinyon") || f.includes("Bodoni") ? "Aa" : "निमंत्रण")))
     : Promise.resolve();
   Promise.race([fonts, new Promise(r => setTimeout(r, 2500))])
     .catch(() => {})
