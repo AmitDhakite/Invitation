@@ -432,6 +432,33 @@ body.is-sealed{ overflow:hidden; }
 }
 .invite-name > span{ display:block; }
 .invite-amp{ font-size:.5em; color:var(--accent); padding:.1em 0 .04em; }
+
+/* gold that catches the light: as the phone tilts (or, without tilt, as the card scrolls or a finger
+   moves), a glint of deep gold passes through the names and the gilt edge brightens on one side.
+   the names stay in ink, and the glint never goes paler than deep gold, so they always read.
+   --sx and --sy run from -1 to 1, set by the script */
+.invite{ --sx:0; --sy:0; --lx:0; --ly:0; --foil-peak:color-mix(in srgb, var(--seal-deep) 82%, var(--seal)); }
+/* the card itself leans a few degrees with the phone (or towards the mouse): --lx and --ly, -1 to 1.
+   only the live card, once it's in hand, so the letter lands on it without a jolt */
+.invite.is-here{ transform:perspective(1600px) rotateY(calc(var(--lx) * 5deg)) rotateX(calc(var(--ly) * -3.5deg)); }
+.invite-name > span:not(.invite-amp){
+  background:linear-gradient(105deg,
+    var(--ink) 0%, var(--ink) 38%, var(--seal-deep) 45%, var(--foil-peak) 50%, var(--seal-deep) 55%, var(--ink) 62%, var(--ink) 100%)
+    calc(50% + var(--sx) * 50%) 0 / 260% 100%;
+  -webkit-background-clip:text; background-clip:text;
+  color:transparent;
+}
+.invite-gilt{
+  position:absolute; inset:0; pointer-events:none;
+  border-radius:inherit;
+  padding:2px;                        /* the gilt's width */
+  background:linear-gradient(calc(135deg + var(--sx) * 40deg + var(--sy) * 25deg),
+    var(--seal-deep), var(--seal) 30%, var(--seal-light) 48%, var(--seal) 66%, var(--seal-deep));
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+          mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity:.9;
+}
 .invite-name:focus{ outline:none; }
 
 /* a name written in by hand: the ink runs left to right.
@@ -444,8 +471,8 @@ body.is-sealed{ overflow:hidden; }
 }
 
 /* a small ornament groups who / when / where — it carries the structure */
-.invite-block, .invite-rsvp{ padding-top:clamp(1.2rem,4.2vw,1.6rem); }
-.invite-block::before, .invite-rsvp::before{
+.invite-block, .invite-actions{ padding-top:clamp(1.2rem,4.2vw,1.6rem); }
+.invite-block::before, .invite-actions::before{
   content:""; display:block;
   width:120px; height:9px;
   margin:0 auto clamp(1.2rem,4.2vw,1.6rem);
@@ -473,9 +500,17 @@ body.is-sealed{ overflow:hidden; }
 .invite-map:active{ color:var(--env-deep); text-decoration-color:var(--ink); }
 .invite-notes{ font-size:.9rem; line-height:1.8; font-style:italic; color:var(--ink-soft); padding-top:.6rem; white-space:pre-line; }
 
-.invite-rsvp{ display:grid; gap:1rem; justify-items:center; padding-bottom:.2rem; }
-.rsvp-by{ font-size:.74rem; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-soft); }
-.rsvp-actions{ display:flex; flex-wrap:wrap; gap:.65rem; justify-content:center; }
+.invite-actions{ display:grid; justify-items:center; padding-bottom:.2rem; }
+.actions{ display:flex; flex-wrap:wrap; gap:.65rem; justify-content:center; }
+
+/* the countdown: three quiet figures under the date, parted by hairlines of gold */
+.countdown{ display:flex; justify-content:center; padding-top:1.05rem; }
+.countdown[hidden]{ display:none; }
+.count-unit{ display:grid; justify-items:center; gap:.3rem; min-width:4.6rem; padding:0 .5rem; }
+.count-unit + .count-unit{ border-left:1px solid var(--frame); }
+.count-num{ font-size:clamp(1.6rem,6.6vw,1.9rem); line-height:1; font-variant-numeric:lining-nums tabular-nums; }
+.count-label{ font-size:.62rem; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-soft); }
+.count-note{ font-size:.95rem; font-style:italic; color:var(--ink-soft); padding-top:.9rem; }
 
 .btn{
   font-family:var(--serif);
@@ -499,7 +534,7 @@ body.is-sealed{ overflow:hidden; }
 }
 /* phone: the two replies stack full width */
 @media (max-width:26rem){
-  .rsvp-actions{ flex-direction:column; width:100%; }
+  .actions{ flex-direction:column; width:100%; }
 }
 
 .invite-from{
@@ -534,9 +569,10 @@ body:not(.is-sealed) .mute{ position:absolute; }       /* once open, it stays at
 
 /* ── Hindi: Devanagari hangs from its headline, so no letter-spacing (it would break the line),
       a little more size for the small print, and more air for the marks above and below ── */
-:lang(hi) .hint, :lang(hi) .invite-lead, :lang(hi) .rsvp-by,
+:lang(hi) .hint, :lang(hi) .invite-lead, :lang(hi) .count-label,
 :lang(hi) .invite-map, :lang(hi) .btn{ letter-spacing:0; }
-:lang(hi) .hint, :lang(hi) .invite-lead, :lang(hi) .rsvp-by{ font-size:.95rem; line-height:1.6; }
+:lang(hi) .hint, :lang(hi) .invite-lead{ font-size:.95rem; line-height:1.6; }
+:lang(hi) .count-label{ font-size:.85rem; }
 :lang(hi) .invite-map{ font-size:.86rem; }
 :lang(hi) .btn{ font-size:.95rem; }
 :lang(hi) .greet{ font-size:clamp(2rem,8.4vw,2.6rem); line-height:1.5; }
@@ -662,8 +698,8 @@ const INVITE = {
   occasion: "invite you to celebrate their wedding",
 
   when: [
-    "Saturday, the fourteenth of March",
-    "two thousand twenty-six",
+    "Sunday, the fourteenth of March",
+    "two thousand twenty-seven",
     "at seven in the evening"
   ],
 
@@ -671,15 +707,12 @@ const INVITE = {
   address: ["42 Rosewood Lane", "Bengaluru 560001"],
   notes:   ["Garden formal", "Dinner and dancing to follow"],
 
-  rsvpBy:       "1 March",
-  rsvpEmail:    "ankita.akash@example.com",
-  rsvpWhatsapp: "",                         // e.g. "919876543210" — if set, replies go to WhatsApp instead
-  from:         "With love, Ankita & Akash",
+  from:    "With love, Ankita & Akash",
 
-  // used by Add to calendar and the map link — local time at the venue, 24-hour
+  // used by the countdown, Add to calendar, and the map and directions — local time at the venue, 24-hour
   calendar: {
-    start:    "2026-03-14T19:00",
-    end:      "2026-03-14T23:30",
+    start:    "2027-03-14T19:00",
+    end:      "2027-03-14T23:30",
     timezone: "Asia/Kolkata",               // so guests in other time zones get the right hour
     title:    "Ankita & Akash's wedding",
     where:    "The Glasshouse, 42 Rosewood Lane, Bengaluru 560001"
@@ -692,15 +725,16 @@ const INVITE = {
     open:     "Tap the seal to open",
     openClick:"Click the seal to open",     // on a computer
     openLabel:"Open your invitation",       // read out by screen readers
-    replyBy:  "Kindly reply by {date}",
     map:      "View on map",
-    reply:    "Reply to this invitation",
+    directions:"Directions",
     addCal:   "Add to calendar",
     mute:     "Mute sound",
     title:    "you're invited",             // the browser tab, after the names
-    mailSubject: "RSVP — {title}",
-    mailBody: "I'd love to come.\n\nName: {name}\nGuests:\n",
-    whatsapp: "Hello! I'd love to come to {title}."
+    // the countdown, under the date: [one, more than one]
+    units:    { month:["month", "months"], day:["day", "days"], hour:["hour", "hours"] },
+    toGo:     "to go",                      // read out by screen readers, after the numbers
+    begun:    "The celebration has begun",  // from the start time until the end time
+    after:    "Thank you for celebrating with us"   // once it's over
   }
 };
 
@@ -711,12 +745,11 @@ const INVITE_HI = {
   occasion: "के शुभ विवाह में आप सादर आमंत्रित हैं",
 
   when: [
-    "शनिवार, 14 मार्च 2026",
+    "रविवार, 14 मार्च 2027",
     "शाम 7 बजे"
   ],
   notes:   ["पोशाक: गार्डन फ़ॉर्मल", "इसके बाद रात्रिभोज एवं नृत्य"],
 
-  rsvpBy:  "1 मार्च",
   from:    "सप्रेम, Ankita & Akash",
 
   calendar: { title: "Ankita & Akash का शुभ विवाह" },
@@ -727,15 +760,15 @@ const INVITE_HI = {
     open:     "खोलने के लिए मुहर पर टैप करें",
     openClick:"खोलने के लिए मुहर पर क्लिक करें",
     openLabel:"अपना निमंत्रण खोलें",
-    replyBy:  "कृपया {date} तक उत्तर दें",
     map:      "नक्शे पर देखें",
-    reply:    "निमंत्रण का उत्तर दें",
+    directions:"रास्ता देखें",
     addCal:   "कैलेंडर में जोड़ें",
     mute:     "ध्वनि बंद करें",
     title:    "आपको निमंत्रण",
-    mailSubject: "उत्तर — {title}",
-    mailBody: "उपस्थिति की पुष्टि\n\nनाम: {name}\nअतिथि संख्या:\n",
-    whatsapp: "नमस्ते! {title} में उपस्थिति की पुष्टि।"
+    units:    { month:["महीना", "महीने"], day:["दिन", "दिन"], hour:["घंटा", "घंटे"] },
+    toGo:     "शेष",
+    begun:    "शुभ उत्सव आरंभ हो चुका है",
+    after:    "हमारे साथ उत्सव मनाने के लिए हृदय से धन्यवाद"
   }
 };
 </script>
@@ -795,7 +828,16 @@ const INVITE_HI = {
   <h1 class="invite-name" id="i-name" tabindex="-1"></h1>
   <p class="invite-occasion" id="i-occasion"></p>
 
-  <section class="invite-block"><p class="invite-when" id="i-when"></p></section>
+  <section class="invite-block">
+    <p class="invite-when" id="i-when"></p>
+    <!-- the countdown to the start time in INVITE.calendar; once it has begun, a line of thanks instead -->
+    <p class="countdown" id="i-count" role="timer">
+      <span class="count-unit"><span class="count-num" data-unit="month"></span><span class="count-label" data-label="month"></span></span>
+      <span class="count-unit"><span class="count-num" data-unit="day"></span><span class="count-label" data-label="day"></span></span>
+      <span class="count-unit"><span class="count-num" data-unit="hour"></span><span class="count-label" data-label="hour"></span></span>
+    </p>
+    <p class="count-note" id="i-count-note" hidden></p>
+  </section>
 
   <section class="invite-block">
     <p class="invite-venue" id="i-venue"></p>
@@ -804,15 +846,15 @@ const INVITE_HI = {
     <p class="invite-notes" id="i-notes"></p>
   </section>
 
-  <section class="invite-rsvp">
-    <p class="rsvp-by" id="i-rsvpby"></p>
-    <div class="rsvp-actions">
-      <a class="btn" id="i-rsvp" href="#">Reply to this invitation</a>
+  <section class="invite-actions">
+    <div class="actions">
+      <a class="btn" id="i-dir" href="#" target="_blank" rel="noopener">Directions</a>
       <button class="btn btn-quiet" id="i-cal" type="button">Add to calendar</button>
     </div>
   </section>
 
   <p class="invite-from" id="i-from"></p>
+  <span class="invite-gilt" aria-hidden="true"></span>
 </article>
 
 <!-- shown only where sound can play -->
@@ -979,10 +1021,9 @@ const INVITE_HI = {
   $("i-venue").textContent    = T.venue;
   $("i-address").textContent  = T.address.join("\n");
   $("i-notes").textContent    = T.notes.join("\n");
-  $("i-rsvpby").textContent   = fill(T.words.replyBy, { date:T.rsvpBy });
   $("i-from").textContent     = T.from;
   $("i-map").textContent      = T.words.map;
-  $("i-rsvp").textContent     = T.words.reply;
+  $("i-dir").textContent      = T.words.directions;
   $("i-cal").textContent      = T.words.addCal;
   envelope.setAttribute("aria-label", T.words.openLabel);
   document.title              = `${T.names.join(" & ")} — ${T.words.title}`;
@@ -994,20 +1035,15 @@ const INVITE_HI = {
   // iOS only applies :active (the seal giving under the thumb) once a touch listener exists
   addEventListener("touchstart", () => {}, { passive:true });
 
-  /* ── replies, directions, calendar ───────────────────────── */
+  /* ── map, directions, calendar ───────────────────────────── */
   const cal = T.calendar;
 
-  const wa = T.rsvpWhatsapp.replace(/\D/g, "");
-  $("i-rsvp").href = wa
-    ? `https://wa.me/${wa}?text=${enc(fill(T.words.whatsapp, { title:cal.title }) + (guest ? ` — ${guest}` : ""))}`
-    : `mailto:${T.rsvpEmail}?subject=${enc(fill(T.words.mailSubject, { title:cal.title }))}`
-      + `&body=${enc(fill(T.words.mailBody, { name:guest }))}`;
+  // Google Maps on every phone, iPhone too: these links open the Google Maps app where it's installed,
+  // and Google Maps in the browser where it isn't. directions start from wherever the guest is
+  $("i-map").href = `https://www.google.com/maps/search/?api=1&query=${enc(cal.where)}`;
+  $("i-dir").href = `https://www.google.com/maps/dir/?api=1&destination=${enc(cal.where)}`;
 
-  $("i-map").href = iOS
-    ? `https://maps.apple.com/?q=${enc(cal.where)}`
-    : `https://www.google.com/maps/search/?api=1&query=${enc(cal.where)}`;
-
-  ["i-rsvp","i-map","i-cal"].forEach(id => $(id).addEventListener("click", () => cue("tap")));
+  ["i-dir","i-map","i-cal"].forEach(id => $(id).addEventListener("click", () => cue("tap")));
 
   // the venue's wall-clock time → the absolute moment, so it lands right in any time zone
   const tzOffset = (date, tz) => {
@@ -1017,12 +1053,51 @@ const INVITE_HI = {
     }).formatToParts(date).map(x => [x.type, x.value]));
     return Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second) - date;
   };
-  const utc   = d => d.toISOString().replace(/[-:]|\.\d{3}/g, "");
-  const stamp = local => {
-    if (!cal.timezone) return local.replace(/[-:]/g, "") + "00";       // floating: the guest's own clock
+  const moment = local => {
     const guess = new Date(local + ":00Z");
-    return utc(new Date(guess - tzOffset(guess, cal.timezone)));
+    return cal.timezone ? new Date(guess - tzOffset(guess, cal.timezone)) : new Date(local);   // no time zone: the guest's own clock
   };
+  const utc   = d => d.toISOString().replace(/[-:]|\.\d{3}/g, "");
+  const stamp = local => cal.timezone ? utc(moment(local)) : local.replace(/[-:]/g, "") + "00";
+
+  /* ── the countdown: months, days and hours to the start ── */
+  const begins = moment(cal.start), ends = moment(cal.end);
+  const count = $("i-count"), note = $("i-count-note");
+  // the same day of the month, n months on (the 31st becomes the month's last day where it's shorter)
+  const plusMonths = (t, n) => {
+    const d = new Date(t), day = d.getUTCDate();
+    d.setUTCDate(1);
+    d.setUTCMonth(d.getUTCMonth() + n);
+    d.setUTCDate(Math.min(day, new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate()));
+    return d;
+  };
+  const tick = () => {
+    const now = Date.now();
+    if (now >= begins) {
+      count.hidden = true;
+      note.hidden = false;
+      note.textContent = now < ends ? T.words.begun : T.words.after;
+      return;
+    }
+    // count from now rounded back to a whole number of hours before the start (never "0" before it starts),
+    // then whole calendar months (so a short February counts as a month), then days and hours
+    const from = begins - Math.ceil((begins - now) / 3600000) * 3600000;
+    let month = 0;
+    while (plusMonths(from, month + 1) <= begins) month++;
+    const hours = Math.round((begins - plusMonths(from, month)) / 3600000);
+    const parts = { month, day:Math.floor(hours / 24), hour:hours % 24 };
+    const said = [];
+    for (const [unit, n] of Object.entries(parts)) {
+      const label = T.words.units[unit][n === 1 ? 0 : 1];
+      count.querySelector(`[data-unit="${unit}"]`).textContent = n;
+      count.querySelector(`[data-label="${unit}"]`).textContent = label;
+      said.push(`${n} ${label}`);
+    }
+    count.setAttribute("aria-label", `${said.join(", ")} ${T.words.toGo}`);
+  };
+  tick();
+  setInterval(tick, 15000);
+  addEventListener("visibilitychange", () => document.hidden || tick());   // right away when the phone comes back to it
   const text = s => String(s).replace(/[\\;,]/g, "\\$&").replace(/\n/g, "\\n");
 
   $("i-cal").addEventListener("click", () => {
@@ -1093,6 +1168,69 @@ const INVITE_HI = {
     return true;
   }
 
+  /* ── gold that catches the light ─────────────────────────────
+     the phone's motion sensor (gyroscope) where it's allowed, the mouse on a computer:
+     the card leans a few degrees and the gold catches the light. without either, scrolling
+     moves the light alone (a card that leaned as you scrolled would feel seasick).
+     reduced motion: card and gold stay still */
+  const shine = (() => {
+    if (calm) return { ask(){}, start(){} };
+    const light = { x:0, y:0 }, lean = { x:0, y:0 };                   // where each should be…
+    const shown = { x:0, y:0, lx:0, ly:0 };                            // …and where they are now
+    let raf = 0, base = null, tilted = false, live = false;
+    const clamp = v => Math.max(-1, Math.min(1, v));
+    // ease towards the target, so the card glides rather than jumps
+    const glide = () => {
+      shown.x  += (light.x - shown.x) * .12;
+      shown.y  += (light.y - shown.y) * .12;
+      shown.lx += ((live ? lean.x : 0) - shown.lx) * .1;
+      shown.ly += ((live ? lean.y : 0) - shown.ly) * .1;
+      for (const [k, v] of [["--sx", shown.x], ["--sy", shown.y], ["--lx", shown.lx], ["--ly", shown.ly]])
+        invite.style.setProperty(k, v.toFixed(3));
+      const moving = Math.abs(light.x - shown.x) + Math.abs(light.y - shown.y)
+                   + Math.abs((live ? lean.x : 0) - shown.lx) + Math.abs((live ? lean.y : 0) - shown.ly);
+      raf = moving > .002 ? requestAnimationFrame(glide) : 0;
+    };
+    const aim = (x, y, leaning) => {
+      light.x = clamp(x); light.y = clamp(y);
+      lean.x = leaning ? light.x : 0; lean.y = leaning ? light.y : 0;
+      if (!raf) raf = requestAnimationFrame(glide);
+    };
+
+    // side to side (gamma) and towards you (beta), measured from however the phone was first held
+    const onTilt = e => {
+      if (e.gamma == null || e.beta == null) return;
+      if (!base) base = { beta:e.beta, gamma:e.gamma };
+      tilted = true;
+      aim((e.gamma - base.gamma) / 25, (e.beta - base.beta) / 25, true);
+    };
+    addEventListener("scroll", () => {
+      if (tilted || mouse) return;
+      const room = document.documentElement.scrollHeight - innerHeight;
+      aim(room > 0 ? scrollY / room * 2 - 1 : 0, 0, false);
+    }, { passive:true });
+    // the mouse, anywhere on the page: the card leans towards it
+    const mouse = matchMedia("(hover:hover) and (pointer:fine)").matches;
+    if (mouse) addEventListener("pointermove", e => {
+      if (tilted || e.pointerType !== "mouse") return;
+      aim(e.clientX / innerWidth * 2 - 1, e.clientY / innerHeight * 2 - 1, true);
+    });
+
+    return {
+      // from the seal tap: iPhone lets a page ask for the motion sensor only from a tap (a one-time prompt);
+      // Android simply allows it
+      ask(){
+        const D = window.DeviceOrientationEvent;
+        if (!D) return;
+        const listen = () => addEventListener("deviceorientation", onTilt);
+        if (typeof D.requestPermission === "function") D.requestPermission().then(a => a === "granted" && listen()).catch(() => {});
+        else listen();
+      },
+      // the card is in hand: from here it may lean (easing in from flat, so the hand-over stays seamless)
+      start(){ live = true; if (!raf) raf = requestAnimationFrame(glide); }
+    };
+  })();
+
   /* ── the opening ─────────────────────────────────────────── */
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches && !location.search.includes("motion");
   const timers = [];
@@ -1104,6 +1242,7 @@ const INVITE_HI = {
     invite.classList.toggle("is-soft", soft);
     invite.classList.add("is-here");
     document.body.classList.remove("is-sealed");
+    shine.start();
     $("i-name").focus({ preventScroll:true });
   };
 
@@ -1126,6 +1265,7 @@ const INVITE_HI = {
 
   const unseal = () => {
     if (!measure()) return;
+    shine.ask();                                       // the motion sensor, while this is still a tap
     state = "opening";
     envelope.setAttribute("aria-disabled", "true");
     cue("crack");
