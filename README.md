@@ -1,4 +1,4 @@
-# Ankita & Akash — the invitation
+# The invitation
 
 A sealed digital wedding invitation: guests tap the wax seal, the envelope opens and the card unfolds.
 Plain HTML, no build step, hosted on GitHub Pages.
